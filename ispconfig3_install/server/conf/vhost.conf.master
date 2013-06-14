@@ -47,8 +47,16 @@
 		SSLCertificateFile <tmpl_var name='document_root'>/ssl/<tmpl_var name='ssl_domain'>.crt
 		SSLCertificateKeyFile <tmpl_var name='document_root'>/ssl/<tmpl_var name='ssl_domain'>.key
 <tmpl_if name='has_bundle_cert'>
-		SSLCACertificateFile <tmpl_var name='document_root'>/ssl/<tmpl_var name='ssl_domain'>.bundle
+		SSLCertificateChainFile <tmpl_var name='document_root'>/ssl/<tmpl_var name='ssl_domain'>.bundle
 </tmpl_if>
+	SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    <FilesMatch "\.(cgi|shtml|phtml|php)$">
+		SSLOptions +StdEnvVars
+	</FilesMatch>
+	<Directory /usr/lib/cgi-bin>
+		SSLOptions +StdEnvVars
+	</Directory>
+
 </tmpl_if>
 		</IfModule>
 
