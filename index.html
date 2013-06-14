@@ -1,0 +1,74 @@
+<!doctype html>
+<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
+<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
+  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+  <script type="text/javascript" src="javascripts/script.js"></script>
+
+  <title>ISPConfig3 for OVH hosting</title>
+  <meta name="description" content="A modified ISPConfig 3 installation that supports putting email and websites in /home instead of /var (e.g. in OVH dedicated servers), and also it sets HTTPS port to 8443 instead of 443 to help port sharing with OpenVPN.">
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+</head>
+
+<body>
+
+  <div class="wrapper">
+    <header>
+      <h1 class="title">ISPConfig3 for OVH hosting</h1>
+    </header>
+    <div id="container">
+      <p class="tagline">A modified ISPConfig 3 installation that supports putting email and websites in /home instead of /var (e.g. in OVH dedicated servers), and also it sets HTTPS port to 8443 instead of 443 to help port sharing with OpenVPN.</p>
+      <div id="main" role="main">
+        <div class="download-bar">
+        <div class="inner">
+          <a href="https://github.com/idrassi/ispconfig_ovh_hosting/tarball/master" class="download-button tar"><span>Download</span></a>
+          <a href="https://github.com/idrassi/ispconfig_ovh_hosting/zipball/master" class="download-button zip"><span>Download</span></a>
+          <a href="https://github.com/idrassi/ispconfig_ovh_hosting" class="code">View ISPConfig3 for OVH hosting on GitHub</a>
+        </div>
+        <span class="blc"></span><span class="trc"></span>
+        </div>
+        <article class="markdown-body">
+          <h1>
+<a name="ispconfig_ovh_hosting" class="anchor" href="#ispconfig_ovh_hosting"><span class="octicon octicon-link"></span></a>ispconfig_ovh_hosting</h1>
+
+<p>A modified ISPConfig3 installation that supports putting email and websites in /home instead of /var.
+This is useful when hosting ISPConfig 3 in a dedicated server where the / partition is small and /home is much bigger.
+This situation is encountered for example when using dedicated servers from the french hosting company OVH.</p>
+
+<p>This modified ISPConfig3 setup also sets HTTPS port to 8443 instead of 443
+This useful when doing port sharing between OpenVPN and Apache:</p>
+
+<ul>
+<li>In this case, OpenVPN will be listening to port 443 and it will forward non-VPN connections to the Apache instance running onn port 8443.</li>
+</ul><p>I have also corrected an annoying bug in generated SSL configuration for websites where SSLCACertificateFile was wrongly used instead of SSLCertificateChainFile.</p>
+        </article>
+      </div>
+    </div>
+    <footer>
+      <div class="owner">
+      <p><a href="https://github.com/idrassi" class="avatar"><img src="https://secure.gravatar.com/avatar/560d6b1a1d0db0ec8fe1d4c0eff9eba2?s=30&amp;d=https://a248.e.akamai.net/assets.github.com%2Fimages%2Fgravatars%2Fgravatar-user-420.png" width="48" height="48"/></a> <a href="https://github.com/idrassi">idrassi</a> maintains <a href="https://github.com/idrassi/ispconfig_ovh_hosting">ISPConfig3 for OVH hosting</a></p>
+
+
+      </div>
+      <div class="creds">
+        <small>This page generated using <a href="https://pages.github.com/">GitHub Pages</a><br/>theme by <a href="http://twitter.com/jonrohan/">Jon Rohan</a></small>
+      </div>
+    </footer>
+  </div>
+  <div class="current-section">
+    <a href="#top">Scroll to top</a>
+    <a href="https://github.com/idrassi/ispconfig_ovh_hosting/tarball/master" class="tar">tar</a><a href="https://github.com/idrassi/ispconfig_ovh_hosting/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
+    <p class="name"></p>
+  </div>
+
+  
+</body>
+</html>
