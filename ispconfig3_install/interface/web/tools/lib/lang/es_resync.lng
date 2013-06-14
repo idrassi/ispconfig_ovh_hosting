@@ -1,0 +1,13 @@
+<?php
+$wb['head_txt'] = 'Herramientas Resync';
+$wb['legend_txt'] = 'Resync';
+$wb['resync_sites_txt'] = 'Sitios webs Resync';
+$wb['resync_ftp_txt'] = 'Usuarios FTP de Resync';
+$wb['resync_shell_txt'] = 'Usuarios shell de Resync';
+$wb['resync_cron_txt'] = 'Resync cronjobs';
+$wb['resync_db_txt'] = 'Resync clientdb config';
+$wb['resync_mailbox_txt'] = 'Resync Buzones de correo';
+$wb['resync_dns_txt'] = 'Resync DNS registros';
+$wb['btn_start_txt'] = 'Inicio';
+$wb['btn_cancel_txt'] = 'Cancelar';
+?>

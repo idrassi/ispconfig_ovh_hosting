@@ -1,0 +1,4 @@
+<?php
+$wb['welcome_user_txt'] = 'Selamat Datang %s';
+$wb['available_modules_txt'] = 'Modul yang tersedia';
+?>

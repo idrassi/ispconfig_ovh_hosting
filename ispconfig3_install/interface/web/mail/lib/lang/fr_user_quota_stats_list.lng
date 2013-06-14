@@ -1,0 +1,7 @@
+<?php
+$wb['list_head_txt'] = 'Quota des boîtes email';
+$wb['quota_txt'] = 'Quota';
+$wb['name_txt'] = 'Nom';
+$wb['email_txt'] = 'Adresse email';
+$wb['used_txt'] = 'Espace utilisé';
+?>

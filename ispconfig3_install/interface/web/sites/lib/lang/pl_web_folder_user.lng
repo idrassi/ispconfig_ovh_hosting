@@ -1,0 +1,12 @@
+<?php
+$wb['web_folder_id_txt'] = 'Katalog';
+$wb['username_txt'] = 'Login';
+$wb['password_txt'] = 'Hasło';
+$wb['active_txt'] = 'Aktywny';
+$wb['folder_error_empty'] = 'Nie wybrano katalogu.';
+$wb['password_strength_txt'] = 'Siła hasła';
+$wb['generate_password_txt'] = 'Generuj hasło';
+$wb['repeat_password_txt'] = 'Powtórz hasło';
+$wb['password_mismatch_txt'] = 'Hasła nie pasują do siebie';
+$wb['password_match_txt'] = 'Hasła pasują';
+?>

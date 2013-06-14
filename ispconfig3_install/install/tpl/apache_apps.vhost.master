@@ -1,0 +1,43 @@
+
+######################################################
+# This virtual host contains the configuration
+# for the ISPConfig apps vhost
+######################################################
+
+{vhost_port_listen} Listen {apps_vhost_port}
+# NameVirtualHost *:{apps_vhost_port}
+
+<VirtualHost {apps_vhost_ip}:{apps_vhost_port}>
+  ServerAdmin webmaster@localhost
+  {apps_vhost_servername}
+  
+  <IfModule mod_php5.c>
+    DocumentRoot {apps_vhost_dir}
+    AddType application/x-httpd-php .php
+    <Directory {apps_vhost_dir}>
+      # php_admin_value open_basedir "{apps_vhost_dir}:/usr/share:/tmp"
+      Options FollowSymLinks
+      AllowOverride None
+      Order allow,deny
+      Allow from all
+    </Directory>
+  </IfModule>
+  
+  <IfModule mod_fcgid.c>
+    DocumentRoot {apps_vhost_dir}
+    SuexecUserGroup ispapps ispapps
+    <Directory {apps_vhost_dir}>
+      Options Indexes FollowSymLinks MultiViews +ExecCGI
+      AllowOverride AuthConfig Indexes Limit Options FileInfo
+      AddHandler fcgid-script .php
+      FCGIWrapper {website_basedir}/php-fcgi-scripts/apps/.php-fcgi-starter .php
+      Order allow,deny
+      Allow from all
+    </Directory>
+  </IfModule>
+  
+  ServerSignature Off
+
+</VirtualHost>
+
+

@@ -1,0 +1,7 @@
+<?php
+$wb['server_id_txt'] = 'Serveur';
+$wb['parent_domain_id_txt'] = 'Site web';
+$wb['path_txt'] = 'Chemin';
+$wb['active_txt'] = 'Actif';
+$wb['path_error_regex'] = 'Chemin de dossier invalide.';
+?>

@@ -1,0 +1,7 @@
+
+# Installing PowerDNS on Debian
+----------------------------------------------------------------------------
+
+apt-get install pdns-server pdns-backend-mysql
+
+

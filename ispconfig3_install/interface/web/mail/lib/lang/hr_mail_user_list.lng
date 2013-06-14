@@ -1,0 +1,8 @@
+<?php
+$wb['list_head_txt'] = 'Mailbox';
+$wb['email_txt'] = 'Email';
+$wb['autoresponder_txt'] = 'Automatski odgovor';
+$wb['add_new_record_txt'] = 'Dodaj mailbox';
+$wb['name_txt'] = 'Ime';
+$wb['login_txt'] = 'Prijava';
+?>

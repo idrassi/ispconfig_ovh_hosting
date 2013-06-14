@@ -1,0 +1,73 @@
+
+######################################################
+# This virtual host contains the configuration
+# for the ISPConfig controlpanel
+######################################################
+
+{vhost_port_listen} Listen {vhost_port}
+NameVirtualHost *:{vhost_port}
+
+<VirtualHost _default_:{vhost_port}>
+  ServerAdmin webmaster@localhost
+  
+  <FilesMatch "\.ph(p3?|tml)$">
+    SetHandler None
+  </FilesMatch>
+  
+  <IfModule mod_fcgid.c>
+    DocumentRoot /var/www/ispconfig/
+    SuexecUserGroup ispconfig ispconfig
+    <Directory /var/www/ispconfig/>
+      Options Indexes FollowSymLinks MultiViews +ExecCGI
+      AllowOverride AuthConfig Indexes Limit Options FileInfo
+      AddHandler fcgid-script .php
+      FCGIWrapper /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter .php
+      Order allow,deny
+      Allow from all
+    </Directory>
+    IPCCommTimeout  7200
+	MaxRequestLen 15728640
+  </IfModule>
+  
+  <IfModule mpm_itk_module>
+    DocumentRoot /usr/local/ispconfig/interface/web/
+	AssignUserId ispconfig ispconfig
+    AddType application/x-httpd-php .php
+    <Directory /usr/local/ispconfig/interface/web>
+      # php_admin_value open_basedir "/usr/local/ispconfig/interface:/usr/share:/tmp"
+      Options FollowSymLinks
+      AllowOverride None
+      Order allow,deny
+      Allow from all
+	  php_value magic_quotes_gpc        0
+    </Directory>
+  </IfModule>
+  
+  # ErrorLog /var/log/apache2/error.log
+  # CustomLog /var/log/apache2/access.log combined
+  ServerSignature Off
+  
+  <IfModule mod_security2.c>
+    SecRuleEngine Off
+  </IfModule>
+
+  # SSL Configuration
+  {ssl_comment}SSLEngine On
+  {ssl_comment}SSLCertificateFile /usr/local/ispconfig/interface/ssl/ispserver.crt
+  {ssl_comment}SSLCertificateKeyFile /usr/local/ispconfig/interface/ssl/ispserver.key
+  {ssl_bundle_comment}SSLCACertificateFile /usr/local/ispconfig/interface/ssl/ispserver.bundle
+
+</VirtualHost>
+
+<Directory /var/www/php-cgi-scripts>
+    AllowOverride None
+    Order Deny,Allow
+    Deny from all
+</Directory>
+
+<Directory /var/www/php-fcgi-scripts>
+    AllowOverride None
+    Order Deny,Allow
+    Deny from all
+</Directory>
+

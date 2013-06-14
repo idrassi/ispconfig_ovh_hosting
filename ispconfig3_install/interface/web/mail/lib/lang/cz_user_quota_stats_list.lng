@@ -1,0 +1,7 @@
+<?php
+$wb['list_head_txt'] = 'Mailbox kvóta';
+$wb['quota_txt'] = 'Kvóta';
+$wb['name_txt'] = 'Jméno';
+$wb['email_txt'] = 'E-mailová adresa';
+$wb['used_txt'] = 'Využité místo';
+?>

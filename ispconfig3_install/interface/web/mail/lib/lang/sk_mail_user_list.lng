@@ -1,0 +1,8 @@
+<?php
+$wb['list_head_txt'] = 'Schránka';
+$wb['email_txt'] = 'Email';
+$wb['autoresponder_txt'] = 'Automatická odpove?';
+$wb['add_new_record_txt'] = 'Pridať novú schránku';
+$wb['name_txt'] = 'Realname';
+$wb['login_txt'] = 'Login';
+?>

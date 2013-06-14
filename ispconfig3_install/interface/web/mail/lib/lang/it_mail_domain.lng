@@ -1,0 +1,13 @@
+<?php
+$wb['server_id_txt'] = 'Server';
+$wb['domain_txt'] = 'Dominio';
+$wb['type_txt'] = 'Tipo';
+$wb['active_txt'] = 'Attivo';
+$wb['domain_error_empty'] = 'Dominio vuoto.';
+$wb['domain_error_unique'] = 'Dominio duplicato.';
+$wb['domain_error_regex'] = 'Nome dominio non valido.';
+$wb['client_txt'] = 'Cleient';
+$wb['limit_maildomain_txt'] = 'Raggiunto numero massimo di domini email per questo account.';
+$wb['policy_txt'] = 'Spamfilter';
+$wb['no_policy'] = '- non abilitato -';
+?>

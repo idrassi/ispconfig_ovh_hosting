@@ -1,0 +1,7 @@
+<?php
+$wb['server_id_txt'] = 'Servidor';
+$wb['parent_domain_id_txt'] = 'Sitio web';
+$wb['path_txt'] = 'Ruta';
+$wb['active_txt'] = 'Activar';
+$wb['path_error_regex'] = 'Ruta del archivo invalida.';
+?>

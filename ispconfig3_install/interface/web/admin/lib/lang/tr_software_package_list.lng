@@ -1,0 +1,11 @@
+<?php
+$wb['list_head_txt'] = 'Yazılım paketleri';
+$wb['installed_txt'] = 'Durum';
+$wb['package_title_txt'] = 'Paket';
+$wb['package_description_txt'] = 'Açıklama';
+$wb['action_txt'] = 'Eylem';
+$wb['toolsarea_head_txt'] = 'Packages';
+$wb['repoupdate_txt'] = 'Update package list';
+$wb['package_id_txt'] = 'local App-ID';
+$wb['no_packages_txt'] = 'No packages available';
+?>

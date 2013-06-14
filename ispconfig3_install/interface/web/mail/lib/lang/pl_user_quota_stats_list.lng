@@ -1,0 +1,7 @@
+<?php
+$wb['list_head_txt'] = 'Użycie skrzynki pocztowej';
+$wb['quota_txt'] = 'Limit';
+$wb['name_txt'] = 'Nazwa';
+$wb['email_txt'] = 'Adres e-mail';
+$wb['used_txt'] = 'Użycie dysku';
+?>

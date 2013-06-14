@@ -1,0 +1,13 @@
+<?php
+$wb['server_id_txt'] = 'Server';
+$wb['domain_txt'] = 'Domena';
+$wb['type_txt'] = 'Vrsta';
+$wb['active_txt'] = 'Aktivno';
+$wb['domain_error_empty'] = 'Domena je prazno.';
+$wb['domain_error_unique'] = 'Već postoji ova domena.';
+$wb['domain_error_regex'] = 'Neispravan naziv domene.';
+$wb['client_txt'] = 'Klijent';
+$wb['limit_maildomain_txt'] = 'Iskorišten je maksimalan broj email domena.';
+$wb['policy_txt'] = 'Spamfilter';
+$wb['no_policy'] = '- nema pravila -';
+?>

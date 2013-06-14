@@ -1,0 +1,135 @@
+Some guidelines for web development with php.
+-----------------------------------------------------
+* Unix Line Breaks Only, NO windows breaks please.
+* Tabs set at 4 spaces either as tabs or spaces.
+* no accidental _<?php space before, within or after a file
+* every php file starts and end with <?php ?> no spaces before or after
+* error_reporting(E_ALL|E_STRICT) , yep php5
+* Magic quotes is gone in php6, get used to it now. config = magic_quotes_gpc() Everything must be quoted
+* Don't use ereg,split and other old function -> gone in php 5.4 or 6 (different information on php.net) http://www.php.net/manual/en/migration53.deprecated.php
+* Don't use shorttags. A Shorttag is <? and that is confusing with <?xml -> always <?php
+* Column names in database tables and database table names are in lowercase
+* Classes for the interface are located in interface/lib/classes/ and loaded with $app->uses() or $app->load() functions.
+* Classes for the server are located in server/lib/classes/ and loaded with $app->uses() or $app->load() functions.
+
+please mark any section that need review or work on with
+// TODO 
+* Add documentation about access levels (public, private, protected).
+* Make function / var names on the following way, first word lower, next word(s) first letter upper like. getFirstResult();
+
+Pear coding guidelines
+
+//*****************************************************************************
+// Commenting style
+//*****************************************************************************
+phpdoc is used for creating and autogenerating the documentation, this means that
+some of the comments can be formatted to be included in documentation.
+ie the source files are scanned then processed and html docs are created. 
+
+The comments break down into the following types
+// is uses for removing lines and debug dev etc
+//** and //* are used as "sub comments"
+/* 
+    is used to comment out blocks
+*/
+/** is used to create documentaion
+* thats over 
+* lines
+*/
+
+If you need to block out a section then use
+/*
+function redundant_code(){
+    something here
+}
+*/
+
+To block out single lines use // and all // are assumed to be redundant test code and NOT comments
+
+// print_r($foo);
+
+For inline comment use //** and //* eg
+
+//** Decide what do do
+switch($decide){
+    //* blow it up
+    case 'baloon':
+        $foo->gas(+1);
+        // test_pressure(); << inline comment
+        break;
+
+    //* Do default action
+    default:
+        do_land();
+        get_gps();
+        //* following grant greaceful exit
+        //basket_exit_crash();
+        basket_exit();
+
+}
+
+Do not use the phpdoc on every function, eg 
+
+/**
+* Login a user
+* @param string user  username
+* @param string password of user
+*/
+>>
+function login($user, $pass){
+.......
+}
+<<
+as this function explains its self, the following clean code will suffice
+>>
+function login($user, $pass){
+.......
+}
+
+If you do need to explain a function then put un the summary syntax eg
+
+/** Pass an array of values where third param is bar
+* $foo['bar'] = 1; // allow a user
+* $foo['bar'] = 2; // destroy user
+* $foo['bar'] = -1; // recreate
+*/
+public function do_something($x, $y, $foo){
+... do something interesting    
+}
+
+//*****************************************************************************
+// Where to store custom settings
+//*****************************************************************************
+
+-- Interface settings
+
+The recommended place to store global interface settings is the ini style global config system 
+(see system.ini.master file in install/tpl/ to set defaults). The settings file 
+gets stored inside the ispconfig database. Settings can be accessed with the function:
+
+$app->uses('ini_parser,getconf');
+$interface_settings = $app->getconf->get_global_config('modulename');
+
+where modulename corresponds to the config section in the system.ini.master file.
+To make the settings editable under System > interface config, add the new configuration
+fields to the file interface/web/admin/form/system_config.tform.php and the corresponding
+tempalte file in the templates subfolder of the admin module.
+
+-- Server settings
+
+Server settings are stored in the ini style server config system (see server.ini.master template file)
+The settings file gets stored inside the ispconfig database in the server table. Settings can be 
+accessed with the function $app->getconf->get_server_config(....)
+
+Example to access the web configuration:
+
+$app->uses('ini_parser,getconf');
+$web_config = $app->getconf->get_server_config($server_id,'web');
+
+
+//*****************************************************************************
+// Learn about the form validators
+//*****************************************************************************
+There are form validators in interface/lib/classes/tform.inc.php to make validating forms easier.
+Read about: REGEX,UNIQUE,NOTEMPTY,ISEMAIL,ISINT,ISPOSITIVE,ISIPV4,CUSTOM
+

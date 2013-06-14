@@ -1,0 +1,6 @@
+<?php
+$wb['list_head_txt'] = 'Support üzenetek';
+$wb['sender_id_txt'] = 'Feladó';
+$wb['subject_txt'] = 'Tárgy';
+$wb['add_new_record_txt'] = 'Új support üzenet';
+?>

@@ -1,0 +1,9 @@
+<?php
+$wb['server_id_txt'] = 'Sunucu';
+$wb['source_txt'] = 'Relay recipient';
+$wb['recipient_txt'] = 'Alıcı';
+$wb['active_txt'] = 'Aktif';
+$wb['source_error_notempty'] = 'Adres boş.';
+$wb['type_txt'] = 'Çeşit';
+$wb['limit_mailfilter_txt'] = 'Hesabınıdaki max. email filtreleri limitine ulaştınız.';
+?>

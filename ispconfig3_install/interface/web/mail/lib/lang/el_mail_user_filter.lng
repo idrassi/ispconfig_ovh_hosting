@@ -1,0 +1,20 @@
+<?php
+$wb['rulename_txt'] = 'Όνομα';
+$wb['action_txt'] = 'Ενέργεια';
+$wb['target_txt'] = 'Φάκελος';
+$wb['active_txt'] = 'Ενεργό';
+$wb['rulename_error_empty'] = 'Το όνομα δεν έχει οριστεί.';
+$wb['searchterm_is_empty'] = 'Ο όρος αναζήτησης δεν έχει οριστεί.';
+$wb['source_txt'] = 'Πηγή';
+$wb['target_error_regex'] = 'Ο προορισμός μπορεί να περιέχει μόνο αυτούς τους χαρακτήρες: a-z, 0-9, -, ., _, και {κενό}';
+$wb['limit_mailfilter_txt'] = 'Έχετε φτάσει το μέγιστο πλήθος των φίλτρων mail.';
+$wb['subject_txt'] = 'Θέμα';
+$wb['from_txt'] = 'Από';
+$wb['to_txt'] = 'Προς';
+$wb['contains_txt'] = 'Περιλαμβάνει';
+$wb['is_txt'] = 'είναι';
+$wb['begins_with_txt'] = 'Ξεκινά με';
+$wb['ends_with_txt'] = 'Τελειώνει σε';
+$wb['move_to_txt'] = 'Μετακίνηση σε';
+$wb['delete_txt'] = 'Διαγραφή';
+?>

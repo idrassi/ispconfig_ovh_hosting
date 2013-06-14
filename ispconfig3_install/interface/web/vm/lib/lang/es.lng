@@ -1,0 +1,7 @@
+<?php
+$wb['Virtual Servers'] = 'Servidor Virtual';
+$wb['OS Templates'] = 'OS Plantillas';
+$wb['VM Templates'] = 'VM Plantillas';
+$wb['IP addresses'] = 'IP dirección';
+$wb['OpenVZ'] = 'OpenVZ';
+?>

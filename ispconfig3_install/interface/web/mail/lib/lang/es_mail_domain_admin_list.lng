@@ -1,0 +1,8 @@
+<?php
+$wb['list_head_txt'] = 'Dominio de Correo';
+$wb['server_id_txt'] = 'Servidor';
+$wb['domain_txt'] = 'Dominio';
+$wb['add_new_record_txt'] = 'Añadir nuevo Dominio';
+$wb['active_txt'] = 'Activa';
+$wb['sys_groupid_txt'] = 'Cliente';
+?>

@@ -1,0 +1,9 @@
+<?php
+$wb['server_id_txt'] = 'Сървър';
+$wb['wb_txt'] = 'wb';
+$wb['rid_txt'] = 'Потребител';
+$wb['email_txt'] = 'Имейл';
+$wb['priority_txt'] = 'Приоритет';
+$wb['active_txt'] = 'Активен';
+$wb['limit_spamfilter_wblist_txt'] = 'Максималният брой на записите за White- или Blacklist в твоят профил е достигнат.';
+?>
