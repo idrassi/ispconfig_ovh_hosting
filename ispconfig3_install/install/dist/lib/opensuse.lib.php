@@ -796,7 +796,7 @@ class installer_dist extends installer_base {
     		$tcp_public_services = trim(str_replace(',',' ',$row["tcp_port"]));
     		$udp_public_services = trim(str_replace(',',' ',$row["udp_port"]));
   		} else {
-    		$tcp_public_services = '21 22 25 53 80 110 443 3306 8080 10000';
+    		$tcp_public_services = '21 22 25 53 80 110 443 3306 8080 8443 10000';
     		$udp_public_services = '53';
   		}
 		
@@ -1068,8 +1068,8 @@ class installer_dist extends installer_base {
 			$content = rf("tpl/apache_ispconfig.vhost.master");
 			$content = str_replace('{vhost_port}', $conf['apache']['vhost_port'], $content);
 		
-			// comment out the listen directive if port is 80 or 443
-			if($conf['apache']['vhost_port'] == 80 or $conf['apache']['vhost_port'] == 443) {
+			// comment out the listen directive if port is 80 or 8443
+			if($conf['apache']['vhost_port'] == 80 or $conf['apache']['vhost_port'] == 8443) {
 				$content = str_replace('{vhost_port_listen}', '#', $content);
 			} else {
 				$content = str_replace('{vhost_port_listen}', '', $content);

@@ -520,7 +520,7 @@ class installer extends installer_base
 		{
 			foreach($records as $rec) {
 				$content .= "NameVirtualHost ".$rec["ip_address"].":80\n";
-				$content .= "NameVirtualHost ".$rec["ip_address"].":443\n";
+				$content .= "NameVirtualHost ".$rec["ip_address"].":8443\n";
 			}
 		}
 		
@@ -601,8 +601,8 @@ class installer extends installer_base
 			$content = str_replace('{website_basedir}', $conf['web']['website_basedir'], $content);
 			$content = str_replace('{apps_vhost_servername}', $apps_vhost_servername, $content);
 		
-			//* comment out the listen directive if port is 80 or 443
-			if($conf['web']['apps_vhost_ip'] == 80 or $conf['web']['apps_vhost_ip'] == 443) {
+			//* comment out the listen directive if port is 80 or 8443
+			if($conf['web']['apps_vhost_ip'] == 80 or $conf['web']['apps_vhost_ip'] == 8443) {
 				$content = str_replace('{vhost_port_listen}', '#', $content);
 			} else {
 				$content = str_replace('{vhost_port_listen}', '', $content);
@@ -921,8 +921,8 @@ class installer extends installer_base
 			$content = $this->get_template_file("apache_ispconfig.vhost", true);
 			$content = str_replace('{vhost_port}', $conf['apache']['vhost_port'], $content);
 		
-			//* comment out the listen directive if port is 80 or 443
-			if ($conf['apache']['vhost_port'] == 80 or $conf['apache']['vhost_port'] == 443) {
+			//* comment out the listen directive if port is 80 or 8443
+			if ($conf['apache']['vhost_port'] == 80 or $conf['apache']['vhost_port'] == 8443) {
 				$content = str_replace('{vhost_port_listen}', '#', $content);
 			} else {
 				$content = str_replace('{vhost_port_listen}', '', $content);

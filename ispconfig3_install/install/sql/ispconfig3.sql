@@ -1135,7 +1135,7 @@ CREATE TABLE `server_ip` (
   `ip_type` enum(  'IPv4',  'IPv6' ) NOT NULL DEFAULT  'IPv4',
   `ip_address` varchar(39) default NULL,
   `virtualhost` enum('n','y') NOT NULL default 'y',
-  `virtualhost_port` varchar(255) default '80,443',
+  `virtualhost_port` varchar(255) default '80,443,8443',
   PRIMARY KEY  (`server_ip_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 

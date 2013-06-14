@@ -132,7 +132,7 @@ class functions {
 	public function get_ispconfig_url() {
 		$url = (stristr($_SERVER['SERVER_PROTOCOL'],'HTTPS') || stristr($_SERVER['HTTPS'],'on'))?'https':'http';
 		$url .= '://'.$_SERVER['SERVER_NAME'];
-		if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443) {
+		if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 8443) {
 			$url .= ':'.$_SERVER['SERVER_PORT'];
 		}
 		return $url;

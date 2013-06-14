@@ -102,8 +102,8 @@ class apps_vhost_plugin {
 			$content = str_replace('{apps_vhost_basedir}', $web_config['website_basedir'], $content);
 		
 		
-			// comment out the listen directive if port is 80 or 443
-			if($web_config['apps_vhost_port'] == 80 or $web_config['apps_vhost_port'] == 443) {
+			// comment out the listen directive if port is 80 or 8443
+			if($web_config['apps_vhost_port'] == 80 or $web_config['apps_vhost_port'] == 8443) {
 				$content = str_replace('{vhost_port_listen}', '#', $content);
 			} else {
 				$content = str_replace('{vhost_port_listen}', '', $content);

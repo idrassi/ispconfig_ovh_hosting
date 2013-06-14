@@ -1327,7 +1327,7 @@ class apache2_plugin {
 		$crt_file = $ssl_dir.'/'.$domain.'.crt';
 		
 		if($data['new']['ssl_domain'] != '' && $data['new']['ssl'] == 'y' && @is_file($crt_file) && @is_file($key_file) && (@filesize($crt_file)>0)  && (@filesize($key_file)>0)) {
-			$tmp_vhost_arr = array('ip_address' => $data['new']['ip_address'], 'ssl_enabled' => 1, 'port' => '443');
+			$tmp_vhost_arr = array('ip_address' => $data['new']['ip_address'], 'ssl_enabled' => 1, 'port' => '8443');
 			if(count($rewrite_rules) > 0)  $tmp_vhost_arr = $tmp_vhost_arr + array('redirects' => $rewrite_rules);
 			$ipv4_ssl_alias_seo_redirects = $alias_seo_redirects;
 			if(is_array($ipv4_ssl_alias_seo_redirects) && !empty($ipv4_ssl_alias_seo_redirects)){
@@ -1363,7 +1363,7 @@ class apache2_plugin {
 		
 			//* Add vhost for ipv6 IP with SSL
 			if($data['new']['ssl_domain'] != '' && $data['new']['ssl'] == 'y' && @is_file($crt_file) && @is_file($key_file) && (@filesize($crt_file)>0)  && (@filesize($key_file)>0)) {
-				$tmp_vhost_arr = array('ip_address' => '['.$data['new']['ipv6_address'].']', 'ssl_enabled' => 1, 'port' => '443');
+				$tmp_vhost_arr = array('ip_address' => '['.$data['new']['ipv6_address'].']', 'ssl_enabled' => 1, 'port' => '8443');
 				if(count($rewrite_rules) > 0)  $tmp_vhost_arr = $tmp_vhost_arr + array('redirects' => $rewrite_rules);
 				$ipv6_ssl_alias_seo_redirects = $alias_seo_redirects;
 				if(is_array($ipv6_ssl_alias_seo_redirects) && !empty($ipv6_ssl_alias_seo_redirects)){

@@ -1028,7 +1028,7 @@ class nginx_plugin {
 						$tmp_redirect_path = $data['new']['redirect_path'];
 						if(substr($tmp_redirect_path,0,7) == '$scheme') $tmp_redirect_path = 'http'.substr($tmp_redirect_path,7);
 						$tmp_redirect_path_parts = parse_url($tmp_redirect_path);
-						if(($tmp_redirect_path_parts['host'] == $data['new']['domain'] || $tmp_redirect_path_parts['host'] == 'www.'.$data['new']['domain']) && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '443' || !isset($tmp_redirect_path_parts['port']))){
+						if(($tmp_redirect_path_parts['host'] == $data['new']['domain'] || $tmp_redirect_path_parts['host'] == 'www.'.$data['new']['domain']) && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '8443' || !isset($tmp_redirect_path_parts['port']))){
 							// URL is local
 							if(substr($tmp_redirect_path_parts['path'],-1) == '/') $tmp_redirect_path_parts['path'] = substr($tmp_redirect_path_parts['path'],0,-1);
 							if(substr($tmp_redirect_path_parts['path'],0,1) != '/') $tmp_redirect_path_parts['path'] = '/'.$tmp_redirect_path_parts['path'];
@@ -1079,8 +1079,8 @@ class nginx_plugin {
 						if(substr($tmp_redirect_path,0,7) == '$scheme') $tmp_redirect_path = 'http'.substr($tmp_redirect_path,7);
 						$tmp_redirect_path_parts = parse_url($tmp_redirect_path);
 												
-						//if($is_serveralias && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '443' || !isset($tmp_redirect_path_parts['port']))){
-						if($this->url_is_local($tmp_redirect_path_parts['host'], $data['new']['domain_id']) && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '443' || !isset($tmp_redirect_path_parts['port']))){
+						//if($is_serveralias && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '8443' || !isset($tmp_redirect_path_parts['port']))){
+						if($this->url_is_local($tmp_redirect_path_parts['host'], $data['new']['domain_id']) && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '8443' || !isset($tmp_redirect_path_parts['port']))){
 							// URL is local
 							if(substr($tmp_redirect_path_parts['path'],-1) == '/') $tmp_redirect_path_parts['path'] = substr($tmp_redirect_path_parts['path'],0,-1);
 							if(substr($tmp_redirect_path_parts['path'],0,1) != '/') $tmp_redirect_path_parts['path'] = '/'.$tmp_redirect_path_parts['path'];
@@ -1130,7 +1130,7 @@ class nginx_plugin {
 						$tmp_redirect_path = $data['new']['redirect_path'];
 						if(substr($tmp_redirect_path,0,7) == '$scheme') $tmp_redirect_path = 'http'.substr($tmp_redirect_path,7);
 						$tmp_redirect_path_parts = parse_url($tmp_redirect_path);
-						if($tmp_redirect_path_parts['host'] == $data['new']['domain'] && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '443' || !isset($tmp_redirect_path_parts['port']))){
+						if($tmp_redirect_path_parts['host'] == $data['new']['domain'] && ($tmp_redirect_path_parts['port'] == '80' || $tmp_redirect_path_parts['port'] == '8443' || !isset($tmp_redirect_path_parts['port']))){
 							// URL is local
 							if(substr($tmp_redirect_path_parts['path'],-1) == '/') $tmp_redirect_path_parts['path'] = substr($tmp_redirect_path_parts['path'],0,-1);
 							if(substr($tmp_redirect_path_parts['path'],0,1) != '/') $tmp_redirect_path_parts['path'] = '/'.$tmp_redirect_path_parts['path'];

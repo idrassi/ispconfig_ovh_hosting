@@ -47,8 +47,8 @@ maximum_object_size_in_memory 300 KB	# max cached-in-memory object size
 # Basic ACLs
 acl all src 0.0.0.0/0.0.0.0
 acl localhost src 127.0.0.1/32
-acl ssl_ports port 443 563
-acl safe_ports port 80 443
+acl ssl_ports port 443 563 8443
+acl safe_ports port 80 443 8443
 
 acl openvz_instances src 192.168.1.0/24
 acl squid_server src localhost
@@ -61,7 +61,7 @@ http_access deny !safe_ports
 
 acl accelerated_protocols proto http https
 acl accelerated_domains dstdomain url_regex -i "{config_dir}/domains.txt"
-acl accelerated_ports myport 80 443 
+acl accelerated_ports myport 80 443 8443
 
 http_access allow accelerated_domains
 http_access allow accelerated_ports

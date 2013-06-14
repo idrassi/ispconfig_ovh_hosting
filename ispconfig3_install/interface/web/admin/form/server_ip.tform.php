@@ -148,7 +148,7 @@ $form["tabs"]['server_ip'] = array (
 														'regex' => '/^([0-9]{1,5}\,{0,1}){1,}$/i',
 														'errmsg'=> 'error_port_syntax'),
 									),
-			'default'	=> '80,443',
+			'default'	=> '80,8443',
 			'value'		=> '',
 			'separator'	=> '',
 			'width'		=> '15',
