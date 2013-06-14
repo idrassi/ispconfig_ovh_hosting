@@ -43,7 +43,7 @@ protocol lda {
 ## Plugin settings
 plugin {
   quota = maildir
-  sieve=/var/vmail/%d/%n/.sieve
+  sieve=/home/vmail/%d/%n/.sieve
 }
 
 ##
@@ -90,7 +90,7 @@ auth default {
 
 }
 
-mail_location = maildir:/var/vmail/%d/%n/Maildir
+mail_location = maildir:/home/vmail/%d/%n/Maildir
 
 mail_uid = 5000
 mail_gid = 5000

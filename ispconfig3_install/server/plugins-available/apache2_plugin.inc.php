@@ -1279,7 +1279,7 @@ class apache2_plugin {
 			$cgi_tpl->setVar('document_root', escapeshellcmd($data['new']['document_root']));
 
 			// This will NOT work!
-			//$cgi_tpl->setVar('open_basedir', '/var/www/' . $data['new']['domain']);
+			//$cgi_tpl->setVar('open_basedir', '/home/www/' . $data['new']['domain']);
 			$cgi_tpl->setVar('php_cgi_bin',$cgi_config['cgi_bin']);
 			$cgi_tpl->setVar('security_level',$web_config['security_level']);
 			

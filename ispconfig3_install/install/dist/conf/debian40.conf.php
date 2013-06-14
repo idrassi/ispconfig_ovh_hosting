@@ -87,9 +87,9 @@ $conf['apache']['php_ini_path_apache'] = '/etc/php5/apache2/php.ini';
 $conf['apache']['php_ini_path_cgi'] = '/etc/php5/cgi/php.ini';
 
 //* Website base settings
-$conf['web']['website_basedir'] = '/var/www';
-$conf['web']['website_path'] = '/var/www/clients/client[client_id]/web[website_id]';
-$conf['web']['website_symlinks'] = '/var/www/[website_domain]/:/var/www/clients/client[client_id]/[website_domain]/';
+$conf['web']['website_basedir'] = '/home/www';
+$conf['web']['website_path'] = '/home/www/clients/client[client_id]/web[website_id]';
+$conf['web']['website_symlinks'] = '/home/www/[website_domain]/:/home/www/clients/client[client_id]/[website_domain]/';
 
 //* Apps base settings
 $conf['web']['apps_vhost_ip'] = '_default_';
@@ -100,7 +100,7 @@ $conf['web']['apps_vhost_group'] = 'ispapps';
 
 //* Fastcgi
 $conf['fastcgi']['fastcgi_phpini_path'] = '/etc/php5/cgi/';
-$conf['fastcgi']['fastcgi_starter_path'] = '/var/www/php-fcgi-scripts/[system_user]/';
+$conf['fastcgi']['fastcgi_starter_path'] = '/home/www/php-fcgi-scripts/[system_user]/';
 $conf['fastcgi']['fastcgi_bin'] = '/usr/bin/php-cgi';
 
 //* Postfix
@@ -113,7 +113,7 @@ $conf['postfix']['vmail_userid'] = '5000';
 $conf['postfix']['vmail_username'] = 'vmail';
 $conf['postfix']['vmail_groupid'] = '5000';
 $conf['postfix']['vmail_groupname'] = 'vmail';
-$conf['postfix']['vmail_mailbox_base'] = '/var/vmail';
+$conf['postfix']['vmail_mailbox_base'] = '/home/vmail';
 
 //* Mailman
 $conf['mailman']['installed'] = false; // will be detected automatically during installation

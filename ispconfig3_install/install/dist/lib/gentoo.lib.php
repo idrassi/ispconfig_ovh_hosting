@@ -43,7 +43,7 @@ class installer extends installer_base
 			$this->write_config_file($conf['jailkit']['config_dir'] . '/' . $conf['jailkit']['jk_chrootsh'], $jkchroot_content);
 		}
 		
-		$command = 'chown root:root /var/www';
+		$command = 'chown root:root /home/www';
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
     }
 	
@@ -942,16 +942,16 @@ class installer extends installer_base
 			$vhost_path = $conf['apache']['vhost_conf_dir'].'/ispconfig.vhost';
 			$this->write_config_file($vhost_path, $content);
 		
-			if(!is_file('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter')) {
+			if(!is_file('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter')) {
 				$content = rf('tpl/apache_ispconfig_fcgi_starter.master');
 				$content = str_replace('{fastcgi_bin}', $conf['fastcgi']['fastcgi_bin'], $content);
 				$content = str_replace('{fastcgi_phpini_path}', $conf['fastcgi']['fastcgi_phpini_path'], $content);
-				@mkdir('/var/www/php-fcgi-scripts/ispconfig', 0755, true);
-				wf('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', $content);
-				exec('chmod +x /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
-				chmod('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', 0755);
-				@symlink($install_dir.'/interface/web','/var/www/ispconfig');
-				exec('chown -R ispconfig:ispconfig /var/www/php-fcgi-scripts/ispconfig');
+				@mkdir('/home/www/php-fcgi-scripts/ispconfig', 0755, true);
+				wf('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', $content);
+				exec('chmod +x /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
+				chmod('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', 0755);
+				@symlink($install_dir.'/interface/web','/home/www/ispconfig');
+				exec('chown -R ispconfig:ispconfig /home/www/php-fcgi-scripts/ispconfig');
 			}
 		}
 

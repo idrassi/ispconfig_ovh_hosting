@@ -52,12 +52,12 @@ protocol lda {
 
 ## Plugin settings
 plugin {
-  quota = dict:user::file:/var/vmail/%d/%n/.quotausage
+  quota = dict:user::file:/home/vmail/%d/%n/.quotausage
   # Because the mail quota is called in the user query 
   # the maildir quota does not need to be set.
   # You do not need: quota = maildir
 
-  sieve=/var/vmail/%d/%n/.sieve
+  sieve=/home/vmail/%d/%n/.sieve
 }
 
 
@@ -102,7 +102,7 @@ auth default {
 
 }
 
-mail_location = maildir:/var/vmail/%d/%n/Maildir
+mail_location = maildir:/home/vmail/%d/%n/Maildir
 
 mail_uid = 5000
 mail_gid = 5000

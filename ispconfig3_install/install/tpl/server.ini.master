@@ -18,8 +18,8 @@ backup_mode=rootgz
 
 [mail]
 module=postfix_mysql
-maildir_path=/var/vmail/[domain]/[localpart]
-homedir_path=/var/vmail
+maildir_path=/home/vmail/[domain]/[localpart]
+homedir_path=/home/vmail
 pop3_imap_daemon=courier
 mail_filter_syntax=maildrop
 mailuser_uid=5000
@@ -39,9 +39,9 @@ getmail_config_dir=/etc/getmail
 
 [web]
 server_type=apache
-website_basedir=/var/www
-website_path=/var/www/clients/client[client_id]/web[website_id]
-website_symlinks=/var/www/[website_domain]/:/var/www/clients/client[client_id]/[website_domain]/
+website_basedir=/home/www
+website_path=/home/www/clients/client[client_id]/web[website_id]
+website_symlinks=/home/www/[website_domain]/:/home/www/clients/client[client_id]/[website_domain]/
 website_symlinks_rel=n
 vhost_conf_dir=/etc/apache2/sites-available
 vhost_conf_enabled_dir=/etc/apache2/sites-enabled
@@ -55,7 +55,7 @@ nginx_group=www-data
 apps_vhost_port=8081
 apps_vhost_ip=_default_
 apps_vhost_servername=
-php_open_basedir=[website_path]/web:[website_path]/private:[website_path]/tmp:/var/www/[website_domain]/web:/srv/www/[website_domain]/web:/usr/share/php5:/usr/share/php:/tmp:/usr/share/phpmyadmin:/etc/phpmyadmin:/var/lib/phpmyadmin:/usr/share/php
+php_open_basedir=[website_path]/web:[website_path]/private:[website_path]/tmp:/home/www/[website_domain]/web:/srv/www/[website_domain]/web:/usr/share/php5:/usr/share/php:/tmp:/usr/share/phpmyadmin:/etc/phpmyadmin:/var/lib/phpmyadmin:/usr/share/php
 htaccess_allow_override=All
 awstats_conf_dir=/etc/awstats
 awstats_data_dir=/var/lib/awstats
@@ -88,7 +88,7 @@ named_conf_path=/etc/bind/named.conf
 named_conf_local_path=/etc/bind/named.conf.local
 
 [fastcgi]
-fastcgi_starter_path=/var/www/php-fcgi-scripts/[system_user]/
+fastcgi_starter_path=/home/www/php-fcgi-scripts/[system_user]/
 fastcgi_starter_script=.php-fcgi-starter
 fastcgi_alias=/php/
 fastcgi_phpini_path=/etc/php5/cgi/

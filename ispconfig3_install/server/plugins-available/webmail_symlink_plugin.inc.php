@@ -110,8 +110,8 @@ class webmail_symlink_plugin {
         if($symlink == false) {
             if(is_link($data["new"]["document_root"].'/web/webmail')) unlink($data["new"]["document_root"].'/web/webmail');
         } else {
-            if(!is_link($data["new"]["document_root"]."/web/webmail")) symlink('/var/www/webmail',$data["new"]["document_root"].'/web/webmail');
-            else symlink('/var/www/webmail',$data["new"]["document_root"].'/web/webmail');
+            if(!is_link($data["new"]["document_root"]."/web/webmail")) symlink('/home/www/webmail',$data["new"]["document_root"].'/web/webmail');
+            else symlink('/home/www/webmail',$data["new"]["document_root"].'/web/webmail');
         }
 	}
 	

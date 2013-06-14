@@ -59,7 +59,7 @@ exec("/etc/init.d/mysqld stop");
 exec("rm -rf /var/lib/mysql/".$conf["db_database"]);
 exec("/etc/init.d/mysqld start");
 
-// Deleting the symlink in /var/www
+// Deleting the symlink in /home/www
 // Apache
 @unlink("/etc/httpd/conf/sites-enabled/000-ispconfig.vhost");
 @unlink("/etc/httpd/conf/sites-available/ispconfig.vhost");

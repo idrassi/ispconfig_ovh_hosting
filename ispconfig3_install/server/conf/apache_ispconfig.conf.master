@@ -6,7 +6,7 @@
 LogFormat "%v %h %l %u %t \"%r\" %>s %B \"%{Referer}i\" \"%{User-Agent}i\"" combined_ispconfig
 CustomLog "| /usr/local/ispconfig/server/scripts/vlogger -s access.log -t \"%Y%m%d-access.log\" /var/log/ispconfig/httpd" combined_ispconfig
 
-<Directory /var/www/clients>
+<Directory /home/www/clients>
     AllowOverride None
     Order Deny,Allow
     Deny from all
@@ -19,7 +19,7 @@ CustomLog "| /usr/local/ispconfig/server/scripts/vlogger -s access.log -t \"%Y%m
     Deny from all
 </Directory>
 
-<Directory /var/www/conf>
+<Directory /home/www/conf>
     AllowOverride None
     Order Deny,Allow
     Deny from all

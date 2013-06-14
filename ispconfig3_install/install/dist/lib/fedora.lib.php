@@ -611,7 +611,7 @@ class installer_dist extends installer_base {
 		if($conf['apache']['installed'] == false) return;
 		if(is_file('/etc/suphp.conf')) {
 			//replaceLine('/etc/suphp.conf','php=php:/usr/bin','x-httpd-suphp=php:/usr/bin/php-cgi',0);
-			replaceLine('/etc/suphp.conf','docroot=','docroot=/var/www',0);
+			replaceLine('/etc/suphp.conf','docroot=','docroot=/home/www',0);
 			replaceLine('/etc/suphp.conf','umask=0077','umask=0022',0);
 		}
 		
@@ -807,7 +807,7 @@ class installer_dist extends installer_base {
 		
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
-		// $command = "ln -s $install_dir/interface/web/ /var/www/ispconfig";
+		// $command = "ln -s $install_dir/interface/web/ /home/www/ispconfig";
 		// caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		
 		//* Create the config file for ISPConfig interface
@@ -1046,23 +1046,23 @@ class installer_dist extends installer_base {
 				}
 			
 				/*
-				exec('mkdir -p /var/www/php-fcgi-scripts/ispconfig');
-				exec('cp tpl/apache_ispconfig_fcgi_starter.master /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
-				exec('chmod +x /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
-				exec('ln -s /usr/local/ispconfig/interface/web /var/www/ispconfig');
-				exec('chown -R ispconfig:ispconfig /var/www/php-fcgi-scripts/ispconfig');
+				exec('mkdir -p /home/www/php-fcgi-scripts/ispconfig');
+				exec('cp tpl/apache_ispconfig_fcgi_starter.master /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
+				exec('chmod +x /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
+				exec('ln -s /usr/local/ispconfig/interface/web /home/www/ispconfig');
+				exec('chown -R ispconfig:ispconfig /home/www/php-fcgi-scripts/ispconfig');
 			
-				replaceLine('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter','PHPRC=','PHPRC=/etc/',0,0);
+				replaceLine('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter','PHPRC=','PHPRC=/etc/',0,0);
 				*/
-				//if(!is_file('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter')) {
+				//if(!is_file('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter')) {
 					$content = rf('tpl/apache_ispconfig_fcgi_starter.master');
 					$content = str_replace('{fastcgi_bin}', $conf['fastcgi']['fastcgi_bin'], $content);
 					$content = str_replace('{fastcgi_phpini_path}', $conf['fastcgi']['fastcgi_phpini_path'], $content);
-					if(!is_dir('/var/www/php-fcgi-scripts/ispconfig')) exec('mkdir -p /var/www/php-fcgi-scripts/ispconfig');
-					wf('/var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', $content);
-					exec('chmod +x /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
-					if(!is_link('/var/www/ispconfig')) exec('ln -s /usr/local/ispconfig/interface/web /var/www/ispconfig');
-					exec('chown -R ispconfig:ispconfig /var/www/php-fcgi-scripts/ispconfig');
+					if(!is_dir('/home/www/php-fcgi-scripts/ispconfig')) exec('mkdir -p /home/www/php-fcgi-scripts/ispconfig');
+					wf('/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter', $content);
+					exec('chmod +x /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter');
+					if(!is_link('/home/www/ispconfig')) exec('ln -s /usr/local/ispconfig/interface/web /home/www/ispconfig');
+					exec('chown -R ispconfig:ispconfig /home/www/php-fcgi-scripts/ispconfig');
 				//}
 			//}
 		}

@@ -110,8 +110,8 @@ class pma_symlink_plugin {
         if($symlink == false) {
             if(is_link($data["new"]["document_root"].'/web/phpmyadmin')) unlink($data["new"]["document_root"].'/web/phpmyadmin');
         } else {
-            if(!is_link($data["new"]["document_root"].'/web/phpmyadmin')) symlink('/var/www/phpmyadmin',$data["new"]["document_root"].'/web/phpmyadmin');
-            else symlink('/var/www/phpmyadmin',$data["new"]["document_root"].'/web/phpmyadmin');
+            if(!is_link($data["new"]["document_root"].'/web/phpmyadmin')) symlink('/home/www/phpmyadmin',$data["new"]["document_root"].'/web/phpmyadmin');
+            else symlink('/home/www/phpmyadmin',$data["new"]["document_root"].'/web/phpmyadmin');
         }
 	}
 	

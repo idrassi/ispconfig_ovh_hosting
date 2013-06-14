@@ -372,7 +372,7 @@ HostAliases="www.'.$domain.' localhost 127.0.0.1'.$aliasdomain.'"';
 		}
 	}
 
-	// awstats_buildstaticpages.pl -update -config=mydomain.com -lang=en -dir=/var/www/domain.com/'.$web_folder.'/stats -awstatsprog=/path/to/awstats.pl
+	// awstats_buildstaticpages.pl -update -config=mydomain.com -lang=en -dir=/home/www/domain.com/'.$web_folder.'/stats -awstatsprog=/path/to/awstats.pl
 	// $command = "$awstats_buildstaticpages_pl -update -config='$domain' -lang=".$conf['language']." -dir='$statsdir' -awstatsprog='$awstats_pl'";
 
 	$command = "$awstats_buildstaticpages_pl -month='$awmonth' -year='$awyear' -update -config='$domain' -lang=".$conf['language']." -dir='$statsdir' -awstatsprog='$awstats_pl'";

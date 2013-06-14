@@ -266,10 +266,10 @@ class monitor_tools {
 
 				//* Dovecot quota check Courier in progress lathama@gmail.com
 		/*
-				if($dir = opendir("/var/vmail")){
+				if($dir = opendir("/home/vmail")){
 						while (($quotafiles = readdir($dir)) !== false){
 								if(preg_match('/.\_quota$/', $quotafiles)){
-										$quotafile = (file("/var/vmail/" . $quotafiles));
+										$quotafile = (file("/home/vmail/" . $quotafiles));
 										$emailaddress = preg_replace('/_quota/',"", $quotafiles);
 										$emailaddress = preg_replace('/_/',"@", $emailaddress);
 										$data[$emailaddress]['used'] = trim($quotafile['1']);

@@ -11,15 +11,15 @@ NameVirtualHost *:{vhost_port}
   ServerAdmin webmaster@localhost
   
   <IfModule mod_fcgid.c>
-    DocumentRoot /var/www/ispconfig/
+    DocumentRoot /home/www/ispconfig/
     SuexecUserGroup ispconfig ispconfig
-    <Directory /var/www/ispconfig/>
+    <Directory /home/www/ispconfig/>
       Options Indexes FollowSymLinks MultiViews +ExecCGI
       AllowOverride AuthConfig Indexes Limit Options FileInfo
       <FilesMatch "\.ph(p[3-5]?|tml)$">
            SetHandler fcgid-script
       </FilesMatch>
-      FCGIWrapper /var/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter .php
+      FCGIWrapper /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter .php
       Order allow,deny
       Allow from all
     </Directory>
@@ -53,13 +53,13 @@ NameVirtualHost *:{vhost_port}
 
 </VirtualHost>
 
-<Directory /var/www/php-cgi-scripts>
+<Directory /home/www/php-cgi-scripts>
     AllowOverride None
     Order Deny,Allow
     Deny from all
 </Directory>
 
-<Directory /var/www/php-fcgi-scripts>
+<Directory /home/www/php-fcgi-scripts>
     AllowOverride None
     Order Deny,Allow
     Deny from all

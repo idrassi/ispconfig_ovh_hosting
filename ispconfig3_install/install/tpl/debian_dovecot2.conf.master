@@ -15,8 +15,8 @@ userdb {
   driver = sql
 }
 plugin {
-  quota = dict:user::file:/var/vmail/%d/%n/.quotausage
-  sieve=/var/vmail/%d/%n/.sieve
+  quota = dict:user::file:/home/vmail/%d/%n/.quotausage
+  sieve=/home/vmail/%d/%n/.sieve
 }
 service auth {
   unix_listener /var/spool/postfix/private/auth {

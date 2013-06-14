@@ -111,7 +111,7 @@ $conf['postfix']['vmail_userid'] = '5000';
 $conf['postfix']['vmail_username'] = 'vmail';
 $conf['postfix']['vmail_groupid'] = '5000';
 $conf['postfix']['vmail_groupname'] = 'vmail';
-$conf['postfix']['vmail_mailbox_base'] = '/var/vmail';
+$conf['postfix']['vmail_mailbox_base'] = '/home/vmail';
 
 //* Mailman
 $conf['mailman']['installed'] = false; // will be detected automatically during installation

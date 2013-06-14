@@ -862,7 +862,7 @@ class installer_dist extends installer_base {
 		
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
-		// $command = "ln -s $install_dir/interface/web/ /var/www/ispconfig";
+		// $command = "ln -s $install_dir/interface/web/ /home/www/ispconfig";
 		// caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		
 		//* Create the config file for ISPConfig interface
@@ -1086,7 +1086,7 @@ class installer_dist extends installer_base {
 				$content = str_replace('{ssl_bundle_comment}', '#', $content);
 			}
 		
-			$content = str_replace('/var/www/', '/srv/www/', $content);
+			$content = str_replace('/home/www/', '/srv/www/', $content);
 		
 			wf("$vhost_conf_dir/ispconfig.vhost", $content);
 		
