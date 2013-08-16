@@ -51,12 +51,12 @@ if(isset($conf)) unset($conf);
 
 
 //** SVN Revision
-$svn_revision = '$Revision: 3937 $';
+$svn_revision = '$Revision: 4095 $';
 $revision = str_replace(array('Revision:','$',' '), '', $svn_revision);
 
 //** Application
 define('ISPC_APP_TITLE', 'ISPConfig');
-define('ISPC_APP_VERSION', '3.0.5.2');
+define('ISPC_APP_VERSION', '3.0.5.3');
 define('DEVSYSTEM', 0);
 
 

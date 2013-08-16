@@ -136,6 +136,9 @@ class page_action extends tform_actions {
 	function onSubmit() {
 		global $app, $conf;
 
+        $parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval(@$this->dataRecord["parent_domain_id"]) . " AND ".$app->tform->getAuthSQL('r'));
+        if(!$parent_domain || $parent_domain['domain_id'] != @$this->dataRecord['parent_domain_id']) $app->tform->errorMessage .= $app->tform->lng("no_domain_perm");
+        
 		if($_SESSION["s"]["user"]["typ"] != 'admin') {
 			// Get the limits of the client
 			$client_group_id = $_SESSION["s"]["user"]["default_group"];
@@ -186,7 +189,7 @@ class page_action extends tform_actions {
 	function onBeforeUpdate() {
 		global $app, $conf, $interfaceConf;
 
-		//* Site shell not be empty
+		//* Site shall not be empty
 		if($this->dataRecord['parent_domain_id'] == 0) $app->tform->errorMessage .= $app->tform->lng("database_site_error_empty").'<br />';
 		
 		//* Get the database name and database user prefix
@@ -264,6 +267,10 @@ class page_action extends tform_actions {
 						if(preg_match('/(^|,)' . preg_quote($server_config['ip_address'], '/') . '(,|$)/', $this->dataRecord['remote_ips']) == false) {
 							$this->dataRecord['remote_ips'] .= ',' . $server_config['ip_address'];
 						}
+                        $tmp = preg_split('/\s*,\s*/', $this->dataRecord['remote_ips']);
+                        $tmp = array_unique($tmp);
+                        $this->dataRecord['remote_ips'] = implode(',', $tmp);
+                        unset($tmp);
 					}
 				}
             }
@@ -328,6 +335,10 @@ class page_action extends tform_actions {
 						if(preg_match('/(^|,)' . preg_quote($server_config['ip_address'], '/') . '(,|$)/', $this->dataRecord['remote_ips']) == false) {
 							$this->dataRecord['remote_ips'] .= ',' . $server_config['ip_address'];
 						}
+                        $tmp = preg_split('/\s*,\s*/', $this->dataRecord['remote_ips']);
+                        $tmp = array_unique($tmp);
+                        $this->dataRecord['remote_ips'] = implode(',', $tmp);
+                        unset($tmp);
 					}
 				}
             }
@@ -341,7 +352,7 @@ class page_action extends tform_actions {
         
         $app->uses('sites_database_plugin');
         
-        $app->sites_database_plugin->processDatabaseInsert($this);
+        //$app->sites_database_plugin->processDatabaseInsert($this);
         
         $app->db->query($sql);
         if($app->db->errorMessage != '') die($app->db->errorMessage);
@@ -355,7 +366,7 @@ class page_action extends tform_actions {
         if(!empty($sql) && !$app->tform->isReadonlyTab($app->tform->getCurrentTab(),$this->id)) {
             
             $app->uses('sites_database_plugin');
-            $app->sites_database_plugin->processDatabaseUpdate($this);
+            //$app->sites_database_plugin->processDatabaseUpdate($this);
 
             $app->db->query($sql);
             if($app->db->errorMessage != '') die($app->db->errorMessage);

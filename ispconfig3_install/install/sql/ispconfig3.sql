@@ -204,6 +204,7 @@ CREATE TABLE `client` (
   `limit_aps` int(11) NOT NULL DEFAULT '-1',
   `default_dnsserver` int(11) unsigned NOT NULL DEFAULT '1',
   `limit_dns_zone` int(11) NOT NULL DEFAULT '-1',
+  `default_slave_dnsserver` int(11) unsigned NOT NULL DEFAULT '1',
   `limit_dns_slave_zone` int(11) NOT NULL DEFAULT '-1',
   `limit_dns_record` int(11) NOT NULL DEFAULT '-1',
   `default_dbserver` int(11) NOT NULL DEFAULT '1',
@@ -836,6 +837,7 @@ CREATE TABLE `mail_user` (
   `disablesieve` enum('n','y') NOT NULL default 'n',
   `disablelda` enum('n','y') NOT NULL default 'n',
   `disabledoveadm` enum('n','y') NOT NULL default 'n',
+  `last_quota_notification` date NULL default NULL,
   PRIMARY KEY  (`mailuser_id`),
   KEY `server_id` (`server_id`,`email`),
   KEY `email_access` (`email`,`access`)
@@ -1423,6 +1425,7 @@ CREATE TABLE `sys_datalog` (
   `user` varchar(255) NOT NULL default '',
   `data` longtext NOT NULL,
   `status` set('pending','ok','warning','error') NOT NULL default 'ok',
+  `error` mediumtext,
   PRIMARY KEY  (`datalog_id`),
   KEY `server_id` (`server_id`,`status`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
@@ -1757,6 +1760,8 @@ CREATE TABLE `web_domain` (
   `traffic_quota_lock` enum('n','y') NOT NULL default 'n',
   `fastcgi_php_version` varchar(255) DEFAULT NULL,
   `proxy_directives` mediumtext,
+  `last_quota_notification` date NULL default NULL,
+  `rewrite_rules` mediumtext,
   PRIMARY KEY  (`domain_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;
 
@@ -2032,7 +2037,7 @@ INSERT INTO `country` (`iso`, `name`, `printable_name`, `iso3`, `numcode`) VALUE
 ('ST', 'SAO TOME AND PRINCIPE', 'Sao Tome and Principe', 'STP', 678),
 ('SA', 'SAUDI ARABIA', 'Saudi Arabia', 'SAU', 682),
 ('SN', 'SENEGAL', 'Senegal', 'SEN', 686),
-('CS', 'SERBIA AND MONTENEGRO', 'Serbia and Montenegro', NULL, NULL),
+('RS', 'SERBIA', 'Serbia', 'SRB', 381),
 ('SC', 'SEYCHELLES', 'Seychelles', 'SYC', 690),
 ('SL', 'SIERRA LEONE', 'Sierra Leone', 'SLE', 694),
 ('SG', 'SINGAPORE', 'Singapore', 'SGP', 702),
@@ -2082,7 +2087,8 @@ INSERT INTO `country` (`iso`, `name`, `printable_name`, `iso3`, `numcode`) VALUE
 ('EH', 'WESTERN SAHARA', 'Western Sahara', 'ESH', 732),
 ('YE', 'YEMEN', 'Yemen', 'YEM', 887),
 ('ZM', 'ZAMBIA', 'Zambia', 'ZMB', 894),
-('ZW', 'ZIMBABWE', 'Zimbabwe', 'ZWE', 716);
+('ZW', 'ZIMBABWE', 'Zimbabwe', 'ZWE', 716),
+('ME', 'MONTENEGRO', 'Montenegro', 'MNE', 382);
 
 -- --------------------------------------------------------
 
@@ -2169,6 +2175,6 @@ INSERT INTO `sys_user` (`userid`, `sys_userid`, `sys_groupid`, `sys_perm_user`, 
 -- Dumping data for table `sys_config`
 --
 
-INSERT INTO sys_config VALUES ('1','db','db_version','3.0.5.2');
+INSERT INTO sys_config VALUES ('1','db','db_version','3.0.5.3');
 
 SET FOREIGN_KEY_CHECKS = 1;

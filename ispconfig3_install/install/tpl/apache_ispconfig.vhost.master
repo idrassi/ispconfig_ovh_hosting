@@ -18,7 +18,7 @@ NameVirtualHost *:{vhost_port}
     DocumentRoot /home/www/ispconfig/
     SuexecUserGroup ispconfig ispconfig
     <Directory /home/www/ispconfig/>
-      Options Indexes FollowSymLinks MultiViews +ExecCGI
+      Options -Indexes FollowSymLinks MultiViews +ExecCGI
       AllowOverride AuthConfig Indexes Limit Options FileInfo
       AddHandler fcgid-script .php
       FCGIWrapper /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter .php

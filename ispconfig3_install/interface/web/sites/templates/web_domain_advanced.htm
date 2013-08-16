@@ -1,6 +1,15 @@
 <h2><tmpl_var name="list_head_txt"></h2>
 <p><tmpl_var name="list_desc_txt"></p>
 
+<tmpl_if name="config_error_msg">
+<div style="background: #ffdfdf; border: 1px solid #df7d7d; border-width: 1px 0; margin: 1.5em 0 1.5em 0; padding: 7px;">
+                <p style="font-face:bold">{tmpl_var name='configuration_error_txt'}</p>
+				<div>
+				<div style="float:left;width:150px;">{tmpl_var name='config_error_tstamp'} :&nbsp;</div><div style="padding-left:150px;">{tmpl_var name='config_error_msg'}</div>
+				</div>
+</div>
+</tmpl_if>
+
 <div class="panel panel_web_domain">
 
     <div class="pnl_formsarea">
@@ -61,11 +70,11 @@
                     <input name="pm_max_requests" id="pm_max_requests" value="{tmpl_var name='pm_max_requests'}" size="3" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
             </div>
-            <div class="ctrlHolder">
+            <div class="ctrlHolder php">
                 <label for="php_open_basedir">{tmpl_var name='php_open_basedir_txt'}</label>
                 <input name="php_open_basedir" id="php_open_basedir" value="{tmpl_var name='php_open_basedir'}" size="30" type="text" class="textInput"  style="width:400px;" />
             </div>
-            <div class="ctrlHolder">
+            <div class="ctrlHolder php">
                 <label for="custom_php_ini">{tmpl_var name='custom_php_ini_txt'}</label>
                 <textarea name="custom_php_ini" id="custom_php_ini" rows='10' cols='50' style="width:400px;">{tmpl_var name='custom_php_ini'}</textarea>&nbsp;<b>{tmpl_var name="available_php_directive_snippets_txt"}</b><br><br>&nbsp;{tmpl_var name="php_directive_snippets_txt"}
             </div>
@@ -143,6 +152,11 @@
                 jQuery('.phpfpm').show();
             } else {
                 jQuery('.phpfpm').hide();
+            }
+			if(data.phptype == "no"){
+                jQuery('.php').hide();
+            } else {
+                jQuery('.php').show();
             }
         });
 		jQuery.getJSON('sites/ajax_get_json.php'+ '?' + Math.round(new Date().getTime()), {web_id : webId, type : "getredirecttype"}, function(data) {

@@ -91,7 +91,8 @@ class page_action extends tform_actions {
 		global $app, $conf;
 		
 		// Get the record of the parent domain
-		$parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval(@$this->dataRecord["parent_domain_id"]));
+		$parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval(@$this->dataRecord["parent_domain_id"]) . " AND ".$app->tform->getAuthSQL('r'));
+        if(!$parent_domain || $parent_domain['domain_id'] != @$this->dataRecord['parent_domain_id']) $app->tform->errorMessage .= $app->tform->lng("no_domain_perm");
 		
 		// Set a few fixed values
 		$this->dataRecord["server_id"] = $parent_domain["server_id"];
@@ -175,6 +176,23 @@ class page_action extends tform_actions {
 		
 			$sql = "UPDATE ftp_user SET server_id = $server_id, dir = '$dir', uid = '$uid', gid = '$gid', sys_groupid = '$sys_groupid' WHERE ftp_user_id = ".$this->id;
 			$app->db->query($sql);
+		}
+		
+		//* 2. check to ensure that the FTP user path is not changed to a path outside of the docroot by a normal user
+		if(isset($this->dataRecord['dir']) && $this->dataRecord['dir'] != $this->oldDataRecord['dir'] && !$app->auth->is_admin()) {
+			$vd = new validate_ftpuser;
+			$error_message = $vd->ftp_dir('dir', $this->dataRecord['dir'], '');
+			//* This check should normally never be triggered
+			//* Set the path to a safe path (web doc root).
+			if($error_message != '') {
+				$ftp_data = $app->db->queryOneRecord("SELECT parent_domain_id FROM ftp_user WHERE ftp_user_id = '".$app->db->quote($app->tform->primary_id)."'");
+				$web = $app->db->queryOneRecord("SELECT * FROM web_domain WHERE domain_id = ".$app->functions->intval($ftp_data["parent_domain_id"]));
+				$dir = $web["document_root"];
+				$sql = "UPDATE ftp_user SET dir = '$dir' WHERE ftp_user_id = ".$this->id;
+				$app->db->query($sql);
+				$app->log("Error in FTP path settings of FTP user ".$this->dataRecord['username'], 1);
+			}
+			
 		}
 		
 	}

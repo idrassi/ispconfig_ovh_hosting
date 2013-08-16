@@ -553,7 +553,8 @@ class tform {
                                         break;
 
                                 case 'PASSWORD':
-                                        $new_record[$key] = '';
+                                        //$new_record[$key] = '';
+										$new_record[$key] = htmlspecialchars($field['default']);
                                 break;
 
                                 case 'CHECKBOX':
@@ -951,6 +952,7 @@ class tform {
 										$field_value_array[] = $field_value;
 									}
 									foreach($field_value_array as $field_value) {
+										$field_value = trim($field_value);
 										if(function_exists('filter_var')) {
 											if(!filter_var($field_value,FILTER_VALIDATE_IP)) {
 												$errmsg = $validator['errmsg'];

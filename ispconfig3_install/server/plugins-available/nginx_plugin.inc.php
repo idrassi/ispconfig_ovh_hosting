@@ -99,7 +99,7 @@ class nginx_plugin {
 		$app->uses('getconf');
 		$web_config = $app->getconf->get_server_config($conf['server_id'], 'web');
 		if ($web_config['CA_path']!='' && !file_exists($web_config['CA_path'].'/openssl.cnf'))
-			$app->log("CA path error, file does not exist:".$web_config['CA_path'].'/openssl.conf',LOGLEVEL_ERROR);	
+			$app->log("CA path error, file does not exist:".$web_config['CA_path'].'/openssl.cnf',LOGLEVEL_ERROR);	
 		
 		//* Only vhosts can have a ssl cert
 		if($data["new"]["type"] != "vhost" && $data["new"]["type"] != "vhostsubdomain") return;
@@ -243,6 +243,7 @@ class nginx_plugin {
 			if(trim($data["new"]["ssl_cert"]) != '') $app->system->file_put_contents($crt_file,$data["new"]["ssl_cert"]);
 			//if(trim($data["new"]["ssl_bundle"]) != '') $app->system->file_put_contents($bundle_file,$data["new"]["ssl_bundle"]);
 			if(trim($data["new"]["ssl_key"]) != '') $app->system->file_put_contents($key_file2,$data["new"]["ssl_key"]);
+			$app->system->chmod($key_file2,0400);
 			
 			// for nginx, bundle files have to be appended to the certificate file
 			if(trim($data["new"]["ssl_bundle"]) != ''){				
@@ -678,6 +679,9 @@ class nginx_plugin {
 			}
 		}
 
+		//* add the nginx user to the client group if this is a vhost and security level is set to high, no matter if this is an insert or update and regardless of set_folder_permissions_on_update
+		if($data['new']['type'] == 'vhost' && $web_config['security_level'] == 20) $app->system->add_user_to_group($groupname, escapeshellcmd($web_config['nginx_user']));
+		
 		//* If the security level is set to high
 		if(($this->action == 'insert' && $data['new']['type'] == 'vhost') or ($web_config['set_folder_permissions_on_update'] == 'y' && $data['new']['type'] == 'vhost')) {
 		
@@ -716,13 +720,10 @@ class nginx_plugin {
 					//* add the nginx user to the client group in the chroot environment
 					$tmp_groupfile = $app->system->server_conf['group_datei'];
 					$app->system->server_conf['group_datei'] = $web_config['website_basedir'].'/etc/group';
-					$app->system->add_user_to_group($groupname, escapeshellcmd($web_config['user']));
+					$app->system->add_user_to_group($groupname, escapeshellcmd($web_config['nginx_user']));
 					$app->system->server_conf['group_datei'] = $tmp_groupfile;
 					unset($tmp_groupfile);
 				}
-
-				//* add the nginx user to the client group
-				$app->system->add_user_to_group($groupname, escapeshellcmd($web_config['nginx_user']));
 				
 				//* Chown all default directories
 				$app->system->chown($data['new']['document_root'],'root');
@@ -831,7 +832,7 @@ class nginx_plugin {
 		if(!is_dir($web_config['website_basedir'].'/conf')) mkdir($web_config['website_basedir'].'/conf');
 		if(trim($data['new']['custom_php_ini']) != '') {
 			$has_custom_php_ini = true;
-			if(!is_dir($custom_php_ini_dir)) $app->system->mkdir($custom_php_ini_dir);
+			if(!is_dir($custom_php_ini_dir)) $app->system->mkdirpath($custom_php_ini_dir);
 			$php_ini_content = '';
 			if($data['new']['php'] == 'mod') {
 				$master_php_ini_path = $web_config['php_ini_path_apache'];
@@ -937,6 +938,100 @@ class nginx_plugin {
 		
 		// backwards compatibility; since ISPConfig 3.0.5, the PHP mode for nginx is called 'php-fpm' instead of 'fast-cgi'. The following line makes sure that old web sites that have 'fast-cgi' in the database still get PHP-FPM support.
 		if($vhost_data['php'] == 'fast-cgi') $vhost_data['php'] = 'php-fpm';
+		
+		// Custom rewrite rules
+		/*
+		$final_rewrite_rules = array();
+		$custom_rewrite_rules = $data['new']['rewrite_rules'];
+		// Make sure we only have Unix linebreaks
+		$custom_rewrite_rules = str_replace("\r\n", "\n", $custom_rewrite_rules);
+		$custom_rewrite_rules = str_replace("\r", "\n", $custom_rewrite_rules);
+		$custom_rewrite_rule_lines = explode("\n", $custom_rewrite_rules);
+		if(is_array($custom_rewrite_rule_lines) && !empty($custom_rewrite_rule_lines)){
+			foreach($custom_rewrite_rule_lines as $custom_rewrite_rule_line){
+				$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+			}
+		}
+		$tpl->setLoop('rewrite_rules', $final_rewrite_rules);
+		*/
+		
+		// Custom rewrite rules
+		$final_rewrite_rules = array();
+		
+		if(isset($data['new']['rewrite_rules']) && trim($data['new']['rewrite_rules']) != '') {
+			$custom_rewrite_rules = trim($data['new']['rewrite_rules']);
+			$custom_rewrites_are_valid = true;
+			// use this counter to make sure all curly brackets are properly closed
+			$if_level = 0;
+			// Make sure we only have Unix linebreaks
+			$custom_rewrite_rules = str_replace("\r\n", "\n", $custom_rewrite_rules);
+			$custom_rewrite_rules = str_replace("\r", "\n", $custom_rewrite_rules);
+			$custom_rewrite_rule_lines = explode("\n", $custom_rewrite_rules);
+			if(is_array($custom_rewrite_rule_lines) && !empty($custom_rewrite_rule_lines)){
+				foreach($custom_rewrite_rule_lines as $custom_rewrite_rule_line){
+					// ignore comments
+					if(substr(ltrim($custom_rewrite_rule_line),0,1) == '#'){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// empty lines
+					if(trim($custom_rewrite_rule_line) == ''){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// rewrite
+					if(preg_match('@^\s*rewrite\s+(^/)?\S+(\$)?\s+\S+(\s+(last|break|redirect|permanent|))?\s*;\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// if
+					if(preg_match('@^\s*if\s+\(\s*\$\S+(\s+(\!?(=|~|~\*))\s+(\S+|\".+\"))?\s*\)\s*\{\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						$if_level += 1;
+						continue;
+					}
+					// if - check for files, directories, etc.
+					if(preg_match('@^\s*if\s+\(\s*\!?-(f|d|e|x)\s+\S+\s*\)\s*\{\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						$if_level += 1;
+						continue;
+					}
+					// break
+					if(preg_match('@^\s*break\s*;\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// return code [ text ]
+					if(preg_match('@^\s*return\s+\d\d\d.*;\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// return code URL
+					// return URL
+					if(preg_match('@^\s*return(\s+\d\d\d)?\s+(http|https|ftp)\://([a-zA-Z0-9\.\-]+(\:[a-zA-Z0-9\.&%\$\-]+)*\@)*((25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])|localhost|([a-zA-Z0-9\-]+\.)*[a-zA-Z0-9\-]+\.(com|edu|gov|int|mil|net|org|biz|arpa|info|name|pro|aero|coop|museum|[a-zA-Z]{2}))(\:[0-9]+)*(/($|[a-zA-Z0-9\.\,\?\'\\\+&%\$#\=~_\-]+))*\s*;\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// set
+					if(preg_match('@^\s*set\s+\$\S+\s+\S+\s*;\s*$@', $custom_rewrite_rule_line)){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						continue;
+					}
+					// closing curly bracket
+					if(trim($custom_rewrite_rule_line) == '}'){
+						$final_rewrite_rules[] = array('rewrite_rule' => $custom_rewrite_rule_line);
+						$if_level -= 1;
+						continue;
+					}
+					$custom_rewrites_are_valid = false;
+					break;
+				}
+			}
+			if(!$custom_rewrites_are_valid || $if_level != 0){
+				$final_rewrite_rules = array();
+			}
+		}
+		$tpl->setLoop('rewrite_rules', $final_rewrite_rules);
 		
 		// Custom nginx directives
 		$final_nginx_directives = array();
@@ -1523,19 +1618,33 @@ class nginx_plugin {
 		if($web_config['check_apache_config'] == 'y') {
 			//* Test if nginx starts with the new configuration file
 			$nginx_online_status_before_restart = $this->_checkTcp('localhost',80);
-			$app->log('nginx status is: '.$nginx_online_status_before_restart,LOGLEVEL_DEBUG);
+			$app->log('nginx status is: '.($nginx_online_status_before_restart === true? 'running' : 'down'),LOGLEVEL_DEBUG);
 
-			$app->services->restartService('httpd','restart');
+			$retval = $app->services->restartService('httpd','restart'); // $retval['retval'] is 0 on success and > 0 on failure
+			$app->log('nginx restart return value is: '.$retval['retval'],LOGLEVEL_DEBUG);
 			
 			// wait a few seconds, before we test the apache status again
 			sleep(2);
 		
 			//* Check if nginx restarted successfully if it was online before
 			$nginx_online_status_after_restart = $this->_checkTcp('localhost',80);
-			$app->log('nginx online status after restart is: '.$nginx_online_status_after_restart,LOGLEVEL_DEBUG);
-			if($nginx_online_status_before_restart && !$nginx_online_status_after_restart) {
-				$app->log('nginx did not restart after the configuration change for website '.$data['new']['domain'].' Reverting the configuration. Saved non-working config as '.$vhost_file.'.err',LOGLEVEL_WARN);
+			$app->log('nginx online status after restart is: '.($nginx_online_status_after_restart === true? 'running' : 'down'),LOGLEVEL_DEBUG);
+			if($nginx_online_status_before_restart && !$nginx_online_status_after_restart || $retval['retval'] > 0) { 
+				$app->log('nginx did not restart after the configuration change for website '.$data['new']['domain'].'. Reverting the configuration. Saved non-working config as '.$vhost_file.'.err',LOGLEVEL_WARN);
+				if(is_array($retval['output']) && !empty($retval['output'])){
+					$app->log('Reason for nginx restart failure: '.implode("\n", $retval['output']),LOGLEVEL_WARN);
+					$app->dbmaster->datalogError(implode("\n", $retval['output']));
+				} else {
+					// if no output is given, check again
+					exec('nginx -t 2>&1', $tmp_output, $tmp_retval);
+					if($tmp_retval > 0 && is_array($tmp_output) && !empty($tmp_output)){
+						$app->log('Reason for nginx restart failure: '.implode("\n", $tmp_output),LOGLEVEL_WARN);
+						$app->dbmaster->datalogError(implode("\n", $tmp_output));
+					}
+					unset($tmp_output, $tmp_retval);
+				}
 				$app->system->copy($vhost_file,$vhost_file.'.err');
+				
 				if(is_file($vhost_file.'~')) {
 					//* Copy back the last backup file
 					$app->system->copy($vhost_file.'~',$vhost_file);
@@ -1581,12 +1690,7 @@ class nginx_plugin {
 			}
 		} else {
 			//* We do not check the nginx config after changes (is faster)
-			if($nginx_chrooted) {
-				$app->services->restartServiceDelayed('httpd','reload');
-			} else {
-				// request a httpd reload when all records have been processed
-				$app->services->restartServiceDelayed('httpd','reload');
-			}
+			$app->services->restartServiceDelayed('httpd','reload');
 		}
 		
 		//* The vhost is written and apache has been restarted, so we 
@@ -2400,6 +2504,12 @@ class nginx_plugin {
 		if(is_array($lines) && !empty($lines)){
 			$linecount = sizeof($lines);
 			for($h=0;$h<$linecount;$h++){
+				// remove comments
+				if(substr(trim($lines[$h]),0,1) == '#'){
+					unset($lines[$h]);
+					continue;
+				}
+				
 				$lines[$h] = rtrim($lines[$h]);
 				/*
 				if(substr(ltrim($lines[$h]), 0, 8) == 'location' && strpos($lines[$h], '{') !== false && strpos($lines[$h], ';') !== false){
@@ -2526,8 +2636,10 @@ class nginx_plugin {
 				$app->log('Removed client directory: '.$client_dir,LOGLEVEL_DEBUG);
 			}
 			
-			$this->_exec('groupdel client'.$client_id);
-			$app->log('Removed group client'.$client_id,LOGLEVEL_DEBUG);
+			if($app->system->is_group('client'.$client_id)){
+				$this->_exec('groupdel client'.$client_id);
+				$app->log('Removed group client'.$client_id,LOGLEVEL_DEBUG);
+			}
 		}
 		
 	}
