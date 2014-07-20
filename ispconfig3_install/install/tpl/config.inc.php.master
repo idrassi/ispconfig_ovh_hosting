@@ -51,12 +51,12 @@ if(isset($conf)) unset($conf);
 
 
 //** SVN Revision
-$svn_revision = '$Revision: 4095 $';
+$svn_revision = '$Revision$';
 $revision = str_replace(array('Revision:','$',' '), '', $svn_revision);
 
 //** Application
 define('ISPC_APP_TITLE', 'ISPConfig');
-define('ISPC_APP_VERSION', '3.0.5.3');
+define('ISPC_APP_VERSION', '3.0.5.4p1');
 define('DEVSYSTEM', 0);
 
 
@@ -148,9 +148,11 @@ $conf['theme'] = '{theme}';
 $conf['html_content_encoding'] = 'utf-8'; // example: utf-8, iso-8859-1, ...
 $conf['logo'] = 'themes/default/images/header_logo.png';
 
+
 //** Default Language and Timezone
 $conf['language'] = '{language}';
 $conf['debug_language'] = false;
+$conf['language_file_import_enabled'] = {language_file_import_enabled}; // Bool value: true / false
 
 //* Complete timezone list: http://php.net/manual/en/timezones.php
 $conf['timezone'] = '{timezone}';

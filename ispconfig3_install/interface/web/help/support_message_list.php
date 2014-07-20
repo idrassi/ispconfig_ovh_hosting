@@ -1,6 +1,6 @@
 <?php
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Path to the list definition file
 $list_def_file = "list/support_message.list.php";
@@ -12,7 +12,7 @@ $app->auth->check_module_permissions('help');
 $app->uses('listform_actions');
 
 //* Optional limit
-$app->listform_actions->SQLExtWhere = "support_message.recipient_id = ".$_SESSION['s']['user']['userid'];
+$app->listform_actions->SQLExtWhere = "support_message.recipient_id = ".$app->functions->intval($_SESSION['s']['user']['userid']);
 
 //* Start the form rendering and action ahndling
 $app->listform_actions->onLoad();

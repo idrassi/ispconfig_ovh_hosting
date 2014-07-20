@@ -35,7 +35,7 @@ EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 error_reporting(E_ALL|E_STRICT);
 
 //** The banner on the command line
-echo "\n\n".str_repeat('-',80)."\n";
+echo "\n\n".str_repeat('-', 80)."\n";
 echo " _____ ___________   _____              __ _         ____
 |_   _/  ___| ___ \ /  __ \            / _(_)       /__  \
   | | \ `--.| |_/ / | /  \/ ___  _ __ | |_ _  __ _    _/ /
@@ -44,11 +44,11 @@ echo " _____ ___________   _____              __ _         ____
  \___/\____/\_|      \____/\___/|_| |_|_| |_|\__, | \____/
                                               __/ |
                                              |___/ ";
-echo "\n".str_repeat('-',80)."\n";
+echo "\n".str_repeat('-', 80)."\n";
 echo "\n\n>> Uninstall  \n\n";
 
-require("/usr/local/ispconfig/server/lib/config.inc.php");
-require("/usr/local/ispconfig/server/lib/app.inc.php");
+require "/usr/local/ispconfig/server/lib/config.inc.php";
+require "/usr/local/ispconfig/server/lib/app.inc.php";
 
 // Delete the ISPConfig database
 // $app->db->query("DROP DATABASE '".$conf["db_database"]."'");
@@ -75,6 +75,15 @@ exec("/etc/init.d/mysql start");
 // Delete the ispconfig files
 exec('rm -rf /usr/local/ispconfig');
 
+// Delete various other files
+@unlink("/usr/local/bin/ispconfig_update.sh");
+@unlink("/usr/local/bin/ispconfig_update_from_svn.sh");
+@unlink("/var/spool/mail/ispconfig");
+@unlink("/home/www/ispconfig");
+@unlink("/home/www/php-fcgi-scripts/ispconfig");
+@unlink("/home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter");
+
+echo "Backups in /var/backup/ and log files in /var/log/ispconfig are not deleted.";
 echo "Please do not forget to delete the ispconfig user in the mysql.user table.\n\n";
 
 echo "Finished.\n";

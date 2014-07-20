@@ -304,7 +304,7 @@ edit /etc/apache2/sites-available/default
 change the first lines to match your system.
 
 Replace 0.0.0.0 with your IP.
-Change Document root to /var/www/apache2-default/
+Change Document root to /home/www/apache2-default/
 This directory is now the standard-hompage for your Server.
 ###
 NameVirtualHost 0.0.0.0:80
@@ -312,7 +312,7 @@ NameVirtualHost 0.0.0.0:80
 <VirtualHost 0.0.0.0:80>
 	ServerAdmin webmaster@localhost
 
-	DocumentRoot /var/www/apache2-default/
+	DocumentRoot /home/www/apache2-default/
 
 ###
 
@@ -369,7 +369,7 @@ add to the end of the file:
 [htscanner]
 Extension = "htscanner.so"
 config_file = ".htaccess"
-default_docroot = "/var/www"
+default_docroot = "/home/www"
 ###
 
 

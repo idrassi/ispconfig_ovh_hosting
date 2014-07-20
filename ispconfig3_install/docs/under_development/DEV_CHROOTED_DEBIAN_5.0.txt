@@ -15,12 +15,12 @@ apt-get install debootstrap libapache2-mod-chroot
 
 # Create the chroot environment
 
-debootstrap lenny /var/www/ ftp://ftp.fr.debian.org/debian/
+debootstrap lenny /home/www/ ftp://ftp.fr.debian.org/debian/
 
 # Add mountpoints for the chroot env into the fstab file
 
-echo "/proc         /var/www/proc               proc           defaults        0       0">>/etc/fstab
-echo "devpts      /var/www/dev/pts            devpts         defaults        0       0">>/etc/fstab
+echo "/proc         /home/www/proc               proc           defaults        0       0">>/etc/fstab
+echo "devpts      /home/www/dev/pts            devpts         defaults        0       0">>/etc/fstab
 
 # mount all the filesystems
 
@@ -28,21 +28,21 @@ mount -a
 
 # add a default chroot dir for all users of the sshusers group
 
-echo "@sshusers       -       chroot  /var/www/">>/etc/security/limits.conf
+echo "@sshusers       -       chroot  /home/www/">>/etc/security/limits.conf
 
 # copy passwd and group files to the chroot env
 
-cp -rf /etc/apt /etc/passwd /etc/group /var/www/etc/ # Cleaning unnecessary users and groups
+cp -rf /etc/apt /etc/passwd /etc/group /home/www/etc/ # Cleaning unnecessary users and groups
 
 # Create symlinks
 
-cd /var/www/var/
-rm -rf /var/www/var/www
+cd /home/www/var/
+rm -rf /home/www/var/www
 ln -s / www
 
 # Enter the chroot
 
-chroot /var/www
+chroot /home/www
 
 # Update files in the chroot environment and install some packages.
 # You can ignore warnings about locales, we will fix them in the next step.
@@ -70,24 +70,24 @@ exit
 
 # Moving the apache configuration is not necessary, as Apache reads
 # the config files before it moves into the chroot
-# rm -rf /var/www/etc/apache2
-# mv -f /etc/apache2 /var/www/etc/
-# ln -s /var/www/etc/apache2 /etc/apache2
+# rm -rf /home/www/etc/apache2
+# mv -f /etc/apache2 /home/www/etc/
+# ln -s /home/www/etc/apache2 /etc/apache2
 
-rm -rf /var/www/etc/php5/cgi/
-mv -f /etc/php5/cgi/ /var/www/etc/php5/
-ln -s /var/www/etc/php5/cgi /etc/php5/
+rm -rf /home/www/etc/php5/cgi/
+mv -f /etc/php5/cgi/ /home/www/etc/php5/
+ln -s /home/www/etc/php5/cgi /etc/php5/
 
-rm -rf /var/www/etc/php5/apache2/
-mv -f /etc/php5/apache2/ /var/www/etc/php5/
-ln -s /var/www/etc/php5/apache2 /etc/php5/
+rm -rf /home/www/etc/php5/apache2/
+mv -f /etc/php5/apache2/ /home/www/etc/php5/
+ln -s /home/www/etc/php5/apache2 /etc/php5/
 
-ln -s /var/www/var/run/apache2.pid /var/run/apache2.pid
+ln -s /home/www/var/run/apache2.pid /var/run/apache2.pid
 
 # enable mod_chroot
 
 a2enmod mod_chroot
-echo "ChrootDir /var/www" > /etc/apache2/conf.d/mod_chroot.conf
+echo "ChrootDir /home/www" > /etc/apache2/conf.d/mod_chroot.conf
 
 # Start apache
 
@@ -106,16 +106,16 @@ rm -f ISPConfig-3.0.1.4-beta-2.tar.gz
 
 # Move the ispconfig interface part to the chroot environment and create a symlink
 
-mkdir /var/www/usr/local/ispconfig
-chown ispconfig:ispconfig /var/www/usr/local/ispconfig
-chmod 750 /var/www/usr/local/ispconfig
-mv /usr/local/ispconfig/interface /var/www/usr/local/ispconfig/
-ln -s /var/www/usr/local/ispconfig/interface /usr/local/ispconfig/interface
-chroot /var/www adduser www-data ispconfig
+mkdir /home/www/usr/local/ispconfig
+chown ispconfig:ispconfig /home/www/usr/local/ispconfig
+chmod 750 /home/www/usr/local/ispconfig
+mv /usr/local/ispconfig/interface /home/www/usr/local/ispconfig/
+ln -s /home/www/usr/local/ispconfig/interface /usr/local/ispconfig/interface
+chroot /home/www adduser www-data ispconfig
 
 # Create a link for the MySQL socket
 
-ln /var/run/mysqld/mysqld.sock /var/www/var/run/mysqld/mysqld.sock
+ln /var/run/mysqld/mysqld.sock /home/www/var/run/mysqld/mysqld.sock
 
 # As an alternative to making a hardlink to the MySQL socket, 
 # change the my.cnf file in the chroot to use TCP sockets.

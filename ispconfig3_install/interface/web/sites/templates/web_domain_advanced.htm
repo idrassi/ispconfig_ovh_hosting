@@ -16,6 +16,14 @@
         <fieldset class="inlineLabels">
             <input name="document_root" id="document_root" value="{tmpl_var name='document_root'}" size="30" maxlength="255" type="hidden" class="textInput" />
             <div class="ctrlHolder">
+                <label for="added_date">{tmpl_var name='added_date_txt'}</label>
+                <input name="added_date" id="added_date" value="{tmpl_var name='added_date'}" size="10" maxlength="255" type="text" class="textInput" />
+            </div>
+			<div class="ctrlHolder">
+                <label for="added_by">{tmpl_var name='added_by_txt'}</label>
+                <input name="added_by" id="added_by" value="{tmpl_var name='added_by'}" size="10" maxlength="255" type="text" class="textInput" />
+            </div>
+			<div class="ctrlHolder">
                 <label for="system_user">{tmpl_var name='system_user_txt'}</label>
                 <label for="system_user">{tmpl_var name='system_user'}</label>
                 <input name="system_user" id="system_user" value="{tmpl_var name='system_user'}" type="hidden" />
@@ -47,27 +55,27 @@
                 </div>
                 <div class="ctrlHolder">
                     <label for="pm_max_children">{tmpl_var name='pm_max_children_txt'}</label>
-                    <input name="pm_max_children" id="pm_max_children" value="{tmpl_var name='pm_max_children'}" size="3" maxlength="3" type="text" class="textInput formLengthLimit" />
+                    <input name="pm_max_children" id="pm_max_children" value="{tmpl_var name='pm_max_children'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
                 <div class="ctrlHolder pm_dynamic">
                     <label for="pm_start_servers">{tmpl_var name='pm_start_servers_txt'}</label>
-                    <input name="pm_start_servers" id="pm_start_servers" value="{tmpl_var name='pm_start_servers'}" size="3" maxlength="3" type="text" class="textInput formLengthLimit" />
+                    <input name="pm_start_servers" id="pm_start_servers" value="{tmpl_var name='pm_start_servers'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
                 <div class="ctrlHolder pm_dynamic">
                     <label for="pm_min_spare_servers">{tmpl_var name='pm_min_spare_servers_txt'}</label>
-                    <input name="pm_min_spare_servers" id="pm_min_spare_servers" value="{tmpl_var name='pm_min_spare_servers'}" size="3" maxlength="3" type="text" class="textInput formLengthLimit" />
+                    <input name="pm_min_spare_servers" id="pm_min_spare_servers" value="{tmpl_var name='pm_min_spare_servers'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
                 <div class="ctrlHolder pm_dynamic">
                     <label for="pm_max_spare_servers">{tmpl_var name='pm_max_spare_servers_txt'}</label>
-                    <input name="pm_max_spare_servers" id="pm_max_spare_servers" value="{tmpl_var name='pm_max_spare_servers'}" size="3" maxlength="3" type="text" class="textInput formLengthLimit" />
+                    <input name="pm_max_spare_servers" id="pm_max_spare_servers" value="{tmpl_var name='pm_max_spare_servers'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
                 <div class="ctrlHolder pm_ondemand">
                     <label for="pm_process_idle_timeout">{tmpl_var name='pm_process_idle_timeout_txt'}</label>
-                    <input name="pm_process_idle_timeout" id="pm_process_idle_timeout" value="{tmpl_var name='pm_process_idle_timeout'}" size="3" maxlength="6" type="text" class="textInput formLengthLimit" />&nbsp;s
+                    <input name="pm_process_idle_timeout" id="pm_process_idle_timeout" value="{tmpl_var name='pm_process_idle_timeout'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />&nbsp;s
                 </div>
                 <div class="ctrlHolder">
                     <label for="pm_max_requests">{tmpl_var name='pm_max_requests_txt'}</label>
-                    <input name="pm_max_requests" id="pm_max_requests" value="{tmpl_var name='pm_max_requests'}" size="3" maxlength="6" type="text" class="textInput formLengthLimit" />
+                    <input name="pm_max_requests" id="pm_max_requests" value="{tmpl_var name='pm_max_requests'}" size="6" maxlength="6" type="text" class="textInput formLengthLimit" />
                 </div>
             </div>
             <div class="ctrlHolder php">
@@ -80,11 +88,11 @@
             </div>
             <div class="ctrlHolder apache">
                 <label for="apache_directives">{tmpl_var name='apache_directives_txt'}</label>
-                <textarea name="apache_directives" id="apache_directives" rows='10' cols='50' style="width:400px;">{tmpl_var name='apache_directives'}</textarea>&nbsp;<b>{tmpl_var name="available_apache_directive_snippets_txt"}</b><br><br>&nbsp;{tmpl_var name="apache_directive_snippets_txt"}
+                <textarea name="apache_directives" id="apache_directives" rows='10' cols='50' style="width:400px;">{tmpl_var name='apache_directives'}</textarea>&nbsp;<b>{tmpl_var name="available_apache_directive_snippets_txt"}</b><br><br>&nbsp;{tmpl_var name="apache_directive_snippets_txt"}<br>----<br><b>&nbsp;{tmpl_var name='variables_txt'}:</b> <a href="javascript:void(0);" class="addPlaceholder">{DOCROOT}</a>
             </div>
             <div class="ctrlHolder nginx">
                 <label for="nginx_directives">{tmpl_var name='nginx_directives_txt'}</label>
-                <textarea name="nginx_directives" id="nginx_directives" rows='10' cols='50' style="width:400px;">{tmpl_var name='nginx_directives'}</textarea>&nbsp;<b>{tmpl_var name="available_nginx_directive_snippets_txt"}</b><br><br>&nbsp;{tmpl_var name="nginx_directive_snippets_txt"}
+                <textarea name="nginx_directives" id="nginx_directives" rows='10' cols='50' style="width:400px;">{tmpl_var name='nginx_directives'}</textarea>&nbsp;<b>{tmpl_var name="available_nginx_directive_snippets_txt"}</b><br><br>&nbsp;{tmpl_var name="nginx_directive_snippets_txt"}<br>----<br><b>&nbsp;{tmpl_var name='variables_txt'}:</b> <a href="javascript:void(0);" class="addPlaceholder">{DOCROOT}</a>, <a href="javascript:void(0);" class="addPlaceholder">{FASTCGIPASS}</a>
             </div>
 			<div class="ctrlHolder proxy">
                 <label for="proxy_directives">{tmpl_var name='proxy_directives_txt'}</label>

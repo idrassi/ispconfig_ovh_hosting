@@ -1,13 +1,13 @@
 <?php
-	session_start();
-	include('../../lib/config.inc.php');
-    header('Content-Type: text/javascript; charset=utf-8'); // the config file sets the content type header so we have to override it here!
-	require_once('../../lib/app.inc.php');
-	$lang = (isset($_SESSION['s']['language']) && $_SESSION['s']['language'] != '')?$_SESSION['s']['language']:'en';
-	include_once(ISPC_ROOT_PATH.'/web/strengthmeter/lib/lang/'.$lang.'_strengthmeter.lng');
-	
-	$app->uses('ini_parser,getconf');
-	$server_config_array = $app->getconf->get_global_config();
+session_start();
+include '../../lib/config.inc.php';
+header('Content-Type: text/javascript; charset=utf-8'); // the config file sets the content type header so we have to override it here!
+require_once '../../lib/app.inc.php';
+$lang = (isset($_SESSION['s']['language']) && $_SESSION['s']['language'] != '')?$_SESSION['s']['language']:'en';
+include_once ISPC_ROOT_PATH.'/web/strengthmeter/lib/lang/'.$lang.'_strengthmeter.lng';
+
+$app->uses('ini_parser,getconf');
+$server_config_array = $app->getconf->get_global_config();
 ?>
 var pageFormChanged = false;
 var tabChangeWarningTxt = '';
@@ -21,10 +21,10 @@ var indicatorCompleted = false;
 redirect = '';
 
 function reportError(request) {
-	/* Error reporting is disabled by default as some browsers like safari 
-	   sometimes throw errors when a ajax request is delayed even if the 
+	/* Error reporting is disabled by default as some browsers like safari
+	   sometimes throw errors when a ajax request is delayed even if the
 	   ajax request worked. */
-	   
+
 	/*alert(request);*/
 }
 
@@ -39,7 +39,7 @@ function showLoadIndicator() {
 if($server_config_array['misc']['use_loadindicator'] == 'y'){
 ?>
     requestsRunning += 1;
-    
+
     if(requestsRunning < 2) {
         var indicator = jQuery('#ajaxloader');
         if(indicator.length < 1) {
@@ -49,7 +49,7 @@ if($server_config_array['misc']['use_loadindicator'] == 'y'){
         var parent = jQuery('#content');
         if(parent.length < 1) return;
         indicatorCompleted = false;
-        
+
         var atx = parent.offset().left + 150; //((parent.outerWidth(true) - indicator.outerWidth(true)) / 2);
         var aty = parent.offset().top + 150;
         indicator.css( {'left': atx, 'top': aty } ).fadeIn('fast', function() {
@@ -84,9 +84,9 @@ if($server_config_array['misc']['use_combobox'] == 'y'){
 }
 
 function loadContentRefresh(pagename) {
-	
+
   if(document.getElementById('refreshinterval').value > 0) {
-	var pageContentObject2 = jQuery.ajax({	type: "GET", 
+	var pageContentObject2 = jQuery.ajax({	type: "GET",
 											url: pagename,
 											data: "refresh="+document.getElementById('refreshinterval').value,
 											dataType: "html",
@@ -104,13 +104,13 @@ function loadContentRefresh(pagename) {
 												reportError('Ajax Request was not successful.'+pagename);
 											}
 										});
-  	setTimeout( "loadContentRefresh('"+pagename+"&refresh="+document.getElementById('refreshinterval').value+"')", document.getElementById('refreshinterval').value*1000 );
+  	setTimeout( "loadContentRefresh('"+pagename+"&refresh="+document.getElementById('refreshinterval').value+"')", document.getElementById('refreshinterval').value*1000*60 );
   }
 }
 
 function capp(module, redirect) {
-	var submitFormObj = jQuery.ajax({		type: "GET", 
-											url: "capp.php", 
+	var submitFormObj = jQuery.ajax({		type: "GET",
+											url: "capp.php",
 											data: "mod="+module+((redirect != undefined) ? '&redirect='+redirect : ''),
 											dataType: "html",
 											beforeSend: function() {
@@ -151,12 +151,12 @@ function submitLoginForm(formname) {
         passwordObj.focus();
         return;
     }
-	
+
 	$('#dummy_username').val(userNameObj.value);
 	$('#dummy_passwort').val(passwordObj.value);
 	$('#dummy_login_form').submit();
 
-	var submitFormObj = jQuery.ajax({		type: "POST", 
+	var submitFormObj = jQuery.ajax({		type: "POST",
 											url: "content.php",
 											data: jQuery('#'+formname).serialize(),
 											dataType: "html",
@@ -193,11 +193,11 @@ function submitLoginForm(formname) {
 	}
 	document.getElementById('footer').innerHTML = 'Powered by <a href="http://www.ispconfig.org" target="_blank">ISPConfig</a>';
 	*/
-	
+
 }
 
 function submitForm(formname,target) {
-	var submitFormObj = jQuery.ajax({		type: "POST", 
+	var submitFormObj = jQuery.ajax({		type: "POST",
 											url: target,
 											data: jQuery('#'+formname).serialize(),
 											dataType: "html",
@@ -235,7 +235,7 @@ function submitForm(formname,target) {
 function submitFormConfirm(formname,target,confirmation) {
 	var successMessage = arguments[3];
 	if(window.confirm(confirmation)) {
-		var submitFormObj = jQuery.ajax({	type: "POST", 
+		var submitFormObj = jQuery.ajax({	type: "POST",
 											url: target,
 											data: jQuery('#'+formname).serialize(),
 											dataType: "html",
@@ -266,10 +266,10 @@ function submitFormConfirm(formname,target,confirmation) {
 	}
 }
 
-function submitUploadForm(formname,target) {		
+function submitUploadForm(formname,target) {
 	var handleResponse = function(loadedFrame) {
 		var response, responseStr = loadedFrame.contentWindow.document.body.innerHTML;
-		
+
 		try {
 			response = JSON.parse(responseStr);
 		} catch(e) {
@@ -285,9 +285,9 @@ function submitUploadForm(formname,target) {
 			msg = msg+'<div id="errorMsg">'+errormsg+'</div>';
 		}
 		return msg;
-		
+
     };
-	
+
 	var frame_id = 'ajaxUploader-iframe-' + Math.round(new Date().getTime() / 1000);
 	jQuery('body').after('<iframe width="0" height="0" style="display:none;" name="'+frame_id+'" id="'+frame_id+'"/>');
 	jQuery('input[type="file"]').closest("form").attr({target: frame_id, action: target}).submit();
@@ -309,7 +309,7 @@ function submitUploadForm(formname,target) {
 
 function loadContent(pagename) {
   var params = arguments[1];
-  var pageContentObject2 = jQuery.ajax({	type: "GET", 
+  var pageContentObject2 = jQuery.ajax({	type: "GET",
 											url: pagename,
                                             data: (params ? params : null),
 											dataType: "html",
@@ -328,7 +328,7 @@ function loadContent(pagename) {
 													//var reponse = jQuery(jqXHR.responseText);
 													//var reponseScript = reponse.filter("script");
 													//jQuery.each(reponseScript, function(idx, val) { eval(val.text); } );
-													
+
 													jQuery('#pageContent').html(jqXHR.responseText);
                                                     onAfterContentLoad();
                                                     pageFormChanged = false;
@@ -344,7 +344,7 @@ function loadContent(pagename) {
 
 
 function loadInitContent() {
-	var pageContentObject = jQuery.ajax({	type: "GET", 
+	var pageContentObject = jQuery.ajax({	type: "GET",
 											url: "content.php",
 											data: "s_mod=login&s_pg=index",
 											dataType: "html",
@@ -367,7 +367,7 @@ function loadInitContent() {
 												reportError('Ajax Request was not successful. 114');
 											}
 										});
-  
+
   loadMenus();
   keepalive();
   setTimeout("setFocus()",1000);
@@ -383,7 +383,7 @@ function setFocus() {
 
 
 function loadMenus() {
-  var sideNavObject = jQuery.ajax({			type: "GET", 
+  var sideNavObject = jQuery.ajax({			type: "GET",
 											url: "nav.php",
 											data: "nav=side",
 											dataType: "html",
@@ -399,8 +399,8 @@ function loadMenus() {
 												reportError('Ajax Request was not successful. 115');
 											}
 									});
-	
-  var topNavObject = jQuery.ajax({			type: "GET", 
+
+  var topNavObject = jQuery.ajax({			type: "GET",
 											url: "nav.php",
 											data: "nav=top",
 											dataType: "html",
@@ -422,7 +422,7 @@ function loadMenus() {
 function changeTab(tab,target,force) {
 	//document.forms[0].next_tab.value = tab;
 	document.pageForm.next_tab.value = tab;
-    
+
     var idel = jQuery('form#pageForm').find('[name="id"]');
     var id = null;
     if(idel.length > 0) id = idel.val();
@@ -448,7 +448,7 @@ function changeTab(tab,target,force) {
         }
     }
 }
-	
+
 function del_record(link,confirmation) {
   if(window.confirm(confirmation)) {
           loadContent(link);
@@ -462,7 +462,7 @@ function confirm_action(link,confirmation) {
 }
 
 function loadContentInto(elementid,pagename) {
-  var pageContentObject2 = jQuery.ajax({	type: "GET", 
+  var pageContentObject2 = jQuery.ajax({	type: "GET",
 											url: pagename,
 											dataType: "html",
 											beforeSend: function() {
@@ -480,7 +480,7 @@ function loadContentInto(elementid,pagename) {
 }
 
 function loadOptionInto(elementid,pagename) {
-	var pageContentObject2 = jQuery.ajax({	type: "GET", 
+	var pageContentObject2 = jQuery.ajax({	type: "GET",
 											url: pagename,
 											dataType: "html",
 											beforeSend: function() {
@@ -508,7 +508,7 @@ function loadOptionInto(elementid,pagename) {
 }
 
 function keepalive() {
-	var pageContentObject3 = jQuery.ajax({	type: "GET", 
+	var pageContentObject3 = jQuery.ajax({	type: "GET",
 											url: "keepalive.php",
 											dataType: "html",
 											success: function(data, textStatus, jqXHR) {
@@ -522,8 +522,13 @@ function keepalive() {
 }
 
 
-
-var pass_minimum_length = 5;
+<?php
+$min_password_length = 5;
+if(isset($server_config_array['misc']['min_password_length'])) {
+	$min_password_length = $app->functions->intval($server_config_array['misc']['min_password_length']);
+}
+?>
+var pass_minimum_length = <?php echo $min_password_length; ?>;
 var pass_messages = new Array();
 
 var pass_message = new Array();
@@ -563,24 +568,24 @@ function pass_check(password) {
 		pass_result(0);
 		return;
 	}
-	
+
 	if (length < 5) {
 		pass_result(1);
 		return;
 	}
-	
+
 	if (pass_contains(password, "ABCDEFGHIJKLNMOPQRSTUVWXYZ")) {
 		points += 1;
 	}
-	
+
 	if (pass_contains(password, "0123456789")) {
 		points += 1;
 	}
-	
+
 	if (pass_contains(password, "`~!@#$%^&*()_+|\=-[]}{';:/?.>,<\" ")) {
 		points += 1;
 	}
-	
+
 	if (points == 0) {
 		if (length >= 5 && length <=6) {
 			pass_result(1);
@@ -642,45 +647,70 @@ function pass_contains(pass, check) {
 	return false;
 }
 
+var new_tpl_add_id = 0;
 function addAdditionalTemplate(){
-	var tpl_add = document.getElementById('template_additional').value;
-	
-	  var tpl_list = document.getElementById('template_additional_list').innerHTML;
-	  var addTemplate = document.getElementById('tpl_add_select').value.split('|',2);
-	  var addTplId = addTemplate[0];
-	  var addTplText = addTemplate[1];
+    var tpl_add = jQuery('#template_additional').val();
+    var addTemplate = jQuery('#tpl_add_select').val().split('|',2);
+	var addTplId = addTemplate[0];
+	var addTplText = addTemplate[1];
 	if(addTplId > 0) {
-	  var newVal = tpl_add + '/' + addTplId + '/';
-	  newVal = newVal.replace('//', '/');
-	  var newList = tpl_list + '<br>' + addTplText;
-	  newList = newList.replace('<br><br>', '<br>');
-	  document.getElementById('template_additional').value = newVal;
-	  document.getElementById('template_additional_list').innerHTML = newList;
-	  alert('additional template ' + addTplText + ' added to customer');
+        var newVal = tpl_add.split('/');
+        new_tpl_add_id += 1;
+        var delbtn = jQuery('<a href="#"></a>').attr('class', 'button icons16 icoDelete').click(function(e) {
+            e.preventDefault();
+            delAdditionalTemplate($(this).parent().attr('rel'));
+        });
+        newVal[newVal.length] = 'n' + new_tpl_add_id + ':' + addTplId;
+	    jQuery('<li>' + addTplText + '</li>').attr('rel', 'n' + new_tpl_add_id).append(delbtn).appendTo('#template_additional_list ul');
+	    jQuery('#template_additional').val(newVal.join('/'));
+	    alert('additional template ' + addTplText + ' added to customer');
 	} else {
-	  alert('no additional template selcted');
+	    alert('no additional template selcted');
 	}
 }
 
-function delAdditionalTemplate(){
-	var tpl_add = document.getElementById('template_additional').value;
-	if(tpl_add != '') {
-		var tpl_list = document.getElementById('template_additional_list').innerHTML;
+function delAdditionalTemplate(tpl_id){
+    var tpl_add = jQuery('#template_additional').val();
+	if(tpl_id) {
+        // new style
+		var $el = jQuery('#template_additional_list ul').find('li[rel="' + tpl_id + '"]').eq(0); // only the first
+        var addTplText = $el.text();
+        $el.remove();
+
+		var oldVal = tpl_add.split('/');
+		var newVal = new Array();
+        for(var i = 0; i < oldVal.length; i++) {
+            var tmp = oldVal[i].split(':', 2);
+            if(tmp.length == 2 && tmp[0] == tpl_id) continue;
+            newVal[newVal.length] = oldVal[i];
+        }
+        jQuery('#template_additional').val(newVal.join('/'));
+		alert('additional template ' + addTplText + ' deleted from customer');
+    } else if(tpl_add != '') {
+        // old style
 		var addTemplate = document.getElementById('tpl_add_select').value.split('|',2);
 		var addTplId = addTemplate[0];
 		var addTplText = addTemplate[1];
+
+		jQuery('#template_additional_list ul').find('li:not([rel])').each(function() {
+            var text = jQuery(this).text();
+            if(text == addTplText) {
+                jQuery(this).remove();
+                return false;
+            }
+            return this;
+        });
+
 		var newVal = tpl_add;
-		newVal = newVal.replace(addTplId, '');
+        var repl = new RegExp('(^|\/)' + addTplId + '(\/|$)');
+		newVal = newVal.replace(repl, '');
 		newVal = newVal.replace('//', '/');
-		var newList = tpl_list.replace(addTplText, '');
-		newList = newList.replace('<br><br>', '<br>');
-		document.getElementById('template_additional').value = newVal;
-		document.getElementById('template_additional_list').innerHTML = newList;
+		jQuery('#template_additional').val(newVal);
 		alert('additional template ' + addTplText + ' deleted from customer');
   } else {
   	alert('no additional template selcted');
   }
-  
+
 }
 
 function getInternetExplorerVersion() {
@@ -718,12 +748,19 @@ function password(minLength, special){
 	return password;
 }
 
+<?php
+$min_password_length = 10;
+if(isset($server_config_array['misc']['min_password_length'])) {
+	$min_password_length = $app->functions->intval($server_config_array['misc']['min_password_length']);
+}
+?>
+
 function generatePassword(passwordFieldID, repeatPasswordFieldID){
 	var oldPWField = jQuery('#'+passwordFieldID);
 	var newPWField = oldPWField.clone();
 	newPWField.attr('type', 'text').attr('id', 'tmp'+passwordFieldID).insertBefore(oldPWField);
 	oldPWField.remove();
-	var pword = password(10, false);
+	var pword = password(<?php echo $min_password_length ?>, false);
 	jQuery('#'+repeatPasswordFieldID).val(pword);
 	newPWField.attr('id', passwordFieldID).val(pword).trigger('keyup');
 }
@@ -771,7 +808,7 @@ jQuery('.addPlaceholderContent').live("click", function(){
 	var template2 = jQuery(this).siblings(':input');
 	template2.insertAtCaret(placeholderContentText);
 });
-		
+
 jQuery.fn.extend({
 	insertAtCaret: function(myValue){
 		return this.each(function(i) {
@@ -798,4 +835,3 @@ jQuery.fn.extend({
 		})
 	}
 });
-

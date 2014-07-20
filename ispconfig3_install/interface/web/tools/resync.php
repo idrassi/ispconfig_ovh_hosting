@@ -27,8 +27,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('admin');
@@ -45,7 +45,7 @@ $error = '';
 
 //* load language file
 $lng_file = 'lib/lang/'.$_SESSION['s']['language'].'_resync.lng';
-include($lng_file);
+include $lng_file;
 $app->tpl->setVar($wb);
 
 //* Resyncing websites
@@ -106,6 +106,16 @@ if(isset($_POST['resync_cron']) && $_POST['resync_cron'] == 1) {
 
 //* Resyncing Databases
 if(isset($_POST['resync_db']) && $_POST['resync_db'] == 1) {
+	$db_table = 'web_database_user';
+	$index_field = 'database_user_id';
+	$sql = "SELECT * FROM ".$db_table." WHERE 1";
+	$records = $app->db->queryAllRecords($sql);
+	if(is_array($records)) {
+		foreach($records as $rec) {
+			$app->db->datalogUpdate($db_table, $rec, $index_field, $rec[$index_field], true);
+			$msg .= "Resynced Database user: ".$rec['database_user'].'<br />';
+		}
+	}
 	$db_table = 'web_database';
 	$index_field = 'database_id';
 	$sql = "SELECT * FROM ".$db_table." WHERE active = 'y'";
@@ -118,18 +128,18 @@ if(isset($_POST['resync_db']) && $_POST['resync_db'] == 1) {
 	}
 }
 
-//* Resyncing Mailbox Domains 
-if(isset($_POST['resync_mailbox']) && $_POST['resync_mailbox'] == 1) { 
-    $db_table = 'mail_domain'; 
-    $index_field = 'domain_id'; 
-    $sql = "SELECT * FROM ".$db_table." WHERE active = 'y'"; 
-    $records = $app->db->queryAllRecords($sql); 
-    if(is_array($records)) { 
-        foreach($records as $rec) { 
-            $app->db->datalogUpdate($db_table, $rec, $index_field, $rec[$index_field], true); 
-            $msg .= "Resynced Mail Domain: ".$rec['domain'].'<br />'; 
-        } 
-    } 
+//* Resyncing Mailbox Domains
+if(isset($_POST['resync_mailbox']) && $_POST['resync_mailbox'] == 1) {
+	$db_table = 'mail_domain';
+	$index_field = 'domain_id';
+	$sql = "SELECT * FROM ".$db_table." WHERE active = 'y'";
+	$records = $app->db->queryAllRecords($sql);
+	if(is_array($records)) {
+		foreach($records as $rec) {
+			$app->db->datalogUpdate($db_table, $rec, $index_field, $rec[$index_field], true);
+			$msg .= "Resynced Mail Domain: ".$rec['domain'].'<br />';
+		}
+	}
 }
 
 //* Resyncing Mailboxes
@@ -144,6 +154,16 @@ if(isset($_POST['resync_mailbox']) && $_POST['resync_mailbox'] == 1) {
 			$msg .= "Resynced Mailbox: ".$rec['email'].'<br />';
 		}
 	}
+	$db_table = 'mail_forwarding';
+	$index_field = 'forwarding_id';
+	$sql = "SELECT * FROM ".$db_table;
+	$records = $app->db->queryAllRecords($sql);
+	if(is_array($records)) {
+		foreach($records as $rec) {
+			$app->db->datalogUpdate($db_table, $rec, $index_field, $rec[$index_field], true);
+			$msg .= "Resynced Alias: ".$rec['source'].'<br />';
+		}
+	}
 }
 
 //* Resyncing dns zones
@@ -156,7 +176,7 @@ if(isset($_POST['resync_dns']) && $_POST['resync_dns'] == 1) {
 				foreach($records as $rec) {
 					$new_serial = $app->validate_dns->increase_serial($rec["serial"]);
 					$app->db->datalogUpdate('dns_rr', "serial = '".$new_serial."'", 'id', $rec['id']);
-					
+
 				}
 			}
 			$new_serial = $app->validate_dns->increase_serial($zone["serial"]);
@@ -166,11 +186,36 @@ if(isset($_POST['resync_dns']) && $_POST['resync_dns'] == 1) {
 	} else {
 		$error .= "No zones found to sync.<br />";
 	}
-	
+
 }
 
-$app->tpl->setVar('msg',$msg);
-$app->tpl->setVar('error',$error);
+//* Resyncing Clients
+if(isset($_POST['resync_client']) && $_POST['resync_client'] == 1) {
+	$tform_def_file = "form/client.tform.php";
+	$app->uses('tpl,tform,tform_actions');
+	$app->load('tform_actions');
+	
+	$db_table = 'client';
+	$index_field = 'client_id';
+	$sql = "SELECT * FROM ".$db_table;
+	$records = $app->db->queryAllRecords($sql);
+	if(is_array($records)) {
+		foreach($records as $rec) {
+			$app->db->datalogUpdate($db_table, $rec, $index_field, $rec[$index_field], true);
+			$tmp = new tform_actions;
+			$tmp->id = $rec[$index_field];
+			$tmp->dataRecord = $rec;
+			$tmp->oldDataRecord = $rec;
+			$app->plugin->raiseEvent('client:client:on_after_update', $tmp);
+			$msg .= "Resynced Client: ".$rec['contact_name'].'<br />';
+			unset($tmp);
+		}
+	}
+}
+
+
+$app->tpl->setVar('msg', $msg);
+$app->tpl->setVar('error', $error);
 
 $app->tpl_defaults();
 $app->tpl->pparse();

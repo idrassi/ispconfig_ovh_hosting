@@ -38,8 +38,8 @@ $tform_def_file = "form/dns_srv.tform.php";
 * End Form configuration
 ******************************************/
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('dns');
@@ -57,7 +57,7 @@ class page_action extends tform_actions {
 		if($_SESSION["s"]["user"]["typ"] == 'user') {
 
 			// Get the limits of the client
-			$client_group_id = $_SESSION["s"]["user"]["default_group"];
+			$client_group_id = intval($_SESSION["s"]["user"]["default_group"]);
 			$client = $app->db->queryOneRecord("SELECT limit_dns_record FROM sys_group, client WHERE sys_group.client_id = client.client_id and sys_group.groupid = $client_group_id");
 
 			// Check if the user may add another mailbox.
@@ -77,7 +77,7 @@ class page_action extends tform_actions {
 
 		// Split the 3 parts of the SRV Record apart
 		$split = explode(' ', $this->dataRecord['data']);
-		
+
 		$app->tpl->setVar('weight', $split[0]);
 		$app->tpl->setVar('port', $split[1]);
 		$app->tpl->setVar('target', $split[2]);
@@ -151,6 +151,7 @@ class page_action extends tform_actions {
 		$serial = $app->validate_dns->increase_serial($soa["serial"]);
 		$app->db->datalogUpdate('dns_soa', "serial = $serial", 'id', $soa_id);
 	}
+
 }
 
 $page = new page_action;

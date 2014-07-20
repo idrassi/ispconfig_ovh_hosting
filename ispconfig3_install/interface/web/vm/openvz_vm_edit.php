@@ -38,8 +38,8 @@ $tform_def_file = "form/openvz_vm.tform.php";
 * End Form configuration
 ******************************************/
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('vm');
@@ -52,7 +52,7 @@ class page_action extends tform_actions {
 
 	function onShowNew() {
 		global $app, $conf;
-		
+
 		// we will check only users, not admins
 		if($_SESSION["s"]["user"]["typ"] == 'user') {
 			if(!$app->tform->checkClientLimit('limit_openvz_vm')) {
@@ -62,25 +62,25 @@ class page_action extends tform_actions {
 				$app->error('Reseller: '.$app->tform->wordbook["limit_openvz_vm_txt"]);
 			}
 		}
-		
+
 		parent::onShowNew();
 	}
-	
+
 	function onShowEnd() {
 		global $app, $conf;
 
 		//* Client: If the logged in user is not admin and has no sub clients (no rseller)
 		if($_SESSION["s"]["user"]["typ"] != 'admin' && !$app->auth->has_clients($_SESSION['s']['user']['userid'])) {
-			
+
 			//* Get the limits of the client
-			$client_group_id = $_SESSION["s"]["user"]["default_group"];
+			$client_group_id = $app->functions->intval($_SESSION["s"]["user"]["default_group"]);
 			$client = $app->db->queryOneRecord("SELECT client.client_id, client.contact_name, client.limit_openvz_vm_template_id FROM sys_group, client WHERE sys_group.client_id = client.client_id and sys_group.groupid = $client_group_id");
-			
+
 			//* Fill the template_id field
 			if($client['limit_openvz_vm_template_id'] == 0) {
 				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE 1 ORDER BY template_name';
 			} else {
-				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE template_id = '.$client['limit_openvz_vm_template_id'].' ORDER BY template_name';
+				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE template_id = '.$app->functions->intval($client['limit_openvz_vm_template_id']).' ORDER BY template_name';
 			}
 			$records = $app->db->queryAllRecords($sql);
 			if(is_array($records)) {
@@ -89,20 +89,20 @@ class page_action extends tform_actions {
 					$template_id_select .= "<option value='$rec[template_id]' $selected>$rec[template_name]</option>\r\n";
 				}
 			}
-			$app->tpl->setVar("template_id_select",$template_id_select);
-			
+			$app->tpl->setVar("template_id_select", $template_id_select);
+
 			//* Reseller: If the logged in user is not admin and has sub clients (is a rseller)
 		} elseif ($_SESSION["s"]["user"]["typ"] != 'admin' && $app->auth->has_clients($_SESSION['s']['user']['userid'])) {
-			
+
 			//* Get the limits of the client
 			$client_group_id = $_SESSION["s"]["user"]["default_group"];
 			$client = $app->db->queryOneRecord("SELECT client.client_id, client.contact_name, client.limit_openvz_vm_template_id, CONCAT(IF(client.company_name != '', CONCAT(client.company_name, ' :: '), ''), client.contact_name, ' (', client.username, IF(client.customer_no != '', CONCAT(', ', client.customer_no), ''), ')') as contactname, sys_group.name FROM sys_group, client WHERE sys_group.client_id = client.client_id and sys_group.groupid = $client_group_id");
-			
-			
+
+
 			//* Fill the client select field
-			$sql = "SELECT sys_group.groupid, sys_group.name, CONCAT(IF(client.company_name != '', CONCAT(client.company_name, ' :: '), ''), client.contact_name, ' (', client.username, IF(client.customer_no != '', CONCAT(', ', client.customer_no), ''), ')') as contactname FROM sys_group, client WHERE sys_group.client_id = client.client_id AND client.parent_client_id = ".$client['client_id']." ORDER BY sys_group.name";
+			$sql = "SELECT sys_group.groupid, sys_group.name, CONCAT(IF(client.company_name != '', CONCAT(client.company_name, ' :: '), ''), client.contact_name, ' (', client.username, IF(client.customer_no != '', CONCAT(', ', client.customer_no), ''), ')') as contactname FROM sys_group, client WHERE sys_group.client_id = client.client_id AND client.parent_client_id = ".$app->functions->intval($client['client_id'])." ORDER BY client.company_name, client.contact_name, sys_group.name";
 			$records = $app->db->queryAllRecords($sql);
-			$tmp = $app->db->queryOneRecord("SELECT groupid FROM sys_group WHERE client_id = ".$client['client_id']);
+			$tmp = $app->db->queryOneRecord("SELECT groupid FROM sys_group WHERE client_id = ".$app->functions->intval($client['client_id']));
 			$client_select = '<option value="'.$tmp['groupid'].'">'.$client['contactname'].'</option>';
 			//$tmp_data_record = $app->tform->getDataRecord($this->id);
 			if(is_array($records)) {
@@ -111,13 +111,13 @@ class page_action extends tform_actions {
 					$client_select .= "<option value='$rec[groupid]' $selected>$rec[contactname]</option>\r\n";
 				}
 			}
-			$app->tpl->setVar("client_group_id",$client_select);
-			
+			$app->tpl->setVar("client_group_id", $client_select);
+
 			//* Fill the template_id field
 			if($client['limit_openvz_vm_template_id'] == 0) {
 				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE 1 ORDER BY template_name';
 			} else {
-				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE template_id = '.$client['limit_openvz_vm_template_id'].' ORDER BY template_name';
+				$sql = 'SELECT template_id,template_name FROM openvz_template WHERE template_id = '.$app->functions->intval($client['limit_openvz_vm_template_id']).' ORDER BY template_name';
 			}
 			$records = $app->db->queryAllRecords($sql);
 			if(is_array($records)) {
@@ -126,13 +126,13 @@ class page_action extends tform_actions {
 					$template_id_select .= "<option value='$rec[template_id]' $selected>$rec[template_name]</option>\r\n";
 				}
 			}
-			$app->tpl->setVar("template_id_select",$template_id_select);
+			$app->tpl->setVar("template_id_select", $template_id_select);
 
 			//* Admin: If the logged in user is admin
 		} else {
 
 			//* Fill the client select field
-			$sql = "SELECT sys_group.groupid, sys_group.name, CONCAT(IF(client.company_name != '', CONCAT(client.company_name, ' :: '), ''), client.contact_name, ' (', client.username, IF(client.customer_no != '', CONCAT(', ', client.customer_no), ''), ')') as contactname FROM sys_group, client WHERE sys_group.client_id = client.client_id AND sys_group.client_id > 0 ORDER BY sys_group.name";
+			$sql = "SELECT sys_group.groupid, sys_group.name, CONCAT(IF(client.company_name != '', CONCAT(client.company_name, ' :: '), ''), client.contact_name, ' (', client.username, IF(client.customer_no != '', CONCAT(', ', client.customer_no), ''), ')') as contactname FROM sys_group, client WHERE sys_group.client_id = client.client_id AND sys_group.client_id > 0 ORDER BY client.company_name, client.contact_name, sys_group.name";
 			$clients = $app->db->queryAllRecords($sql);
 			$client_select = "<option value='0'></option>";
 			//$tmp_data_record = $app->tform->getDataRecord($this->id);
@@ -142,8 +142,8 @@ class page_action extends tform_actions {
 					$client_select .= "<option value='$client[groupid]' $selected>$client[contactname]</option>\r\n";
 				}
 			}
-			$app->tpl->setVar("client_group_id",$client_select);
-			
+			$app->tpl->setVar("client_group_id", $client_select);
+
 			//* Fill the template_id field
 			$sql = 'SELECT template_id,template_name FROM openvz_template WHERE 1 ORDER BY template_name';
 			$records = $app->db->queryAllRecords($sql);
@@ -154,17 +154,17 @@ class page_action extends tform_actions {
 					$template_id_select .= "<option value='$rec[template_id]' $selected>$rec[template_name]</option>\r\n";
 				}
 			}
-			$app->tpl->setVar("template_id_select",$template_id_select);
+			$app->tpl->setVar("template_id_select", $template_id_select);
 
 		}
-		
+
 		//* Fill the IPv4 select field with the IP addresses that are allowed for this client
 		//$sql = "SELECT ip_address FROM server_ip WHERE server_id = ".$client['default_webserver']." AND ip_type = 'IPv4' AND (client_id = 0 OR client_id=".$_SESSION['s']['user']['client_id'].")";
 		if(isset($this->dataRecord["server_id"])) {
 			$vm_server_id = $app->functions->intval($this->dataRecord["server_id"]);
 		} else {
 			$tmp = $app->db->queryOneRecord('SELECT server_id FROM server WHERE vserver_server = 1 AND mirror_server_id = 0 ORDER BY server_name LIMIT 0,1');
-			$vm_server_id = $tmp['server_id'];
+			$vm_server_id = $app->functions->intval($tmp['server_id']);
 		}
 		$sql = "SELECT ip_address FROM openvz_ip WHERE reserved = 'n' AND (vm_id = 0 or vm_id = '".$this->id."') AND server_id = ".$app->functions->intval($vm_server_id)." ORDER BY ip_address";
 		$ips = $app->db->queryAllRecords($sql);
@@ -175,10 +175,10 @@ class page_action extends tform_actions {
 				$ip_select .= "<option value='$ip[ip_address]' $selected>$ip[ip_address]</option>\r\n";
 			}
 		}
-		$app->tpl->setVar("ip_address",$ip_select);
+		$app->tpl->setVar("ip_address", $ip_select);
 		unset($tmp);
 		unset($ips);
-		
+
 		if($this->id > 0) {
 			//* we are editing a existing record
 			$app->tpl->setVar("edit_disabled", 1);
@@ -192,8 +192,8 @@ class page_action extends tform_actions {
 		$date_format = $app->lng('conf_format_dateshort');
 		$trans = array("d" => "dd", "m" => "mm", "Y" => "yy");
 		$date_format = strtr($date_format, $trans);
-		$app->tpl->setVar("date_format", $date_format);		
-		
+		$app->tpl->setVar("date_format", $date_format);
+
 		$app->tpl->setVar("daynamesmin_su", $app->lng('daynamesmin_su'));
 		$app->tpl->setVar("daynamesmin_mo", $app->lng('daynamesmin_mo'));
 		$app->tpl->setVar("daynamesmin_tu", $app->lng('daynamesmin_tu'));
@@ -201,7 +201,7 @@ class page_action extends tform_actions {
 		$app->tpl->setVar("daynamesmin_th", $app->lng('daynamesmin_th'));
 		$app->tpl->setVar("daynamesmin_fr", $app->lng('daynamesmin_fr'));
 		$app->tpl->setVar("daynamesmin_sa", $app->lng('daynamesmin_sa'));
-		
+
 		$app->tpl->setVar("daynames_sunday", $app->lng('daynames_sunday'));
 		$app->tpl->setVar("daynames_monday", $app->lng('daynames_monday'));
 		$app->tpl->setVar("daynames_tuesday", $app->lng('daynames_tuesday'));
@@ -209,7 +209,7 @@ class page_action extends tform_actions {
 		$app->tpl->setVar("daynames_thursday", $app->lng('daynames_thursday'));
 		$app->tpl->setVar("daynames_friday", $app->lng('daynames_friday'));
 		$app->tpl->setVar("daynames_saturday", $app->lng('daynames_saturday'));
-		
+
 		$app->tpl->setVar("monthnamesshort_jan", $app->lng('monthnamesshort_jan'));
 		$app->tpl->setVar("monthnamesshort_feb", $app->lng('monthnamesshort_feb'));
 		$app->tpl->setVar("monthnamesshort_mar", $app->lng('monthnamesshort_mar'));
@@ -221,11 +221,11 @@ class page_action extends tform_actions {
 		$app->tpl->setVar("monthnamesshort_sep", $app->lng('monthnamesshort_sep'));
 		$app->tpl->setVar("monthnamesshort_oct", $app->lng('monthnamesshort_oct'));
 		$app->tpl->setVar("monthnamesshort_nov", $app->lng('monthnamesshort_nov'));
-		$app->tpl->setVar("monthnamesshort_dec", $app->lng('monthnamesshort_dec'));		
-		
+		$app->tpl->setVar("monthnamesshort_dec", $app->lng('monthnamesshort_dec'));
+
 		$app->tpl->setVar("datepicker_nextText", $app->lng('datepicker_nextText'));
 		$app->tpl->setVar("datepicker_prevText", $app->lng('datepicker_prevText'));
-		
+
 		parent::onShowEnd();
 	}
 

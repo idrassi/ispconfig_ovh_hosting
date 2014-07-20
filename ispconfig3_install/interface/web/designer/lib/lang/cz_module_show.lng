@@ -1,11 +1,11 @@
 <?php
 $wb['header_txt'] = 'Menu editor';
-$wb['title_txt'] = 'Title';
+$wb['title_txt'] = 'Oslovení';
 $wb['name_txt'] = 'Module';
 $wb['delete_txt'] = 'Smazat';
 $wb['properties_txt'] = 'Properties';
 $wb['new_menu_txt'] = 'Menu new';
-$wb['edit_txt'] = 'Edit';
+$wb['edit_txt'] = 'Upravit';
 $wb['new_txt'] = 'New';
 $wb['up_txt'] = 'Up';
 $wb['down_txt'] = 'Down';

@@ -21,6 +21,30 @@
                 <label for="monitor_key">{tmpl_var name='monitor_key_txt'}</label>
                 <input name="monitor_key" id="monitor_key" value="{tmpl_var name='monitor_key'}" size="" maxlength="" type="text" class="textInput" />
             </div>
+			<div class="ctrlHolder">
+                <label for="admin_dashlets_left">{tmpl_var name='admin_dashlets_left_txt'}</label>
+                <input name="admin_dashlets_left" id="admin_dashlets_left" value="{tmpl_var name='admin_dashlets_left'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
+			<div class="ctrlHolder">
+                <label for="admin_dashlets_right">{tmpl_var name='admin_dashlets_right_txt'}</label>
+                <input name="admin_dashlets_right" id="admin_dashlets_right" value="{tmpl_var name='admin_dashlets_right'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
+			<div class="ctrlHolder">
+                <label for="reseller_dashlets_left">{tmpl_var name='reseller_dashlets_left_txt'}</label>
+                <input name="reseller_dashlets_left" id="reseller_dashlets_left" value="{tmpl_var name='reseller_dashlets_left'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
+			<div class="ctrlHolder">
+                <label for="reseller_dashlets_right">{tmpl_var name='reseller_dashlets_right_txt'}</label>
+                <input name="reseller_dashlets_right" id="reseller_dashlets_right" value="{tmpl_var name='reseller_dashlets_right'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
+			<div class="ctrlHolder">
+                <label for="client_dashlets_left">{tmpl_var name='client_dashlets_left_txt'}</label>
+                <input name="client_dashlets_left" id="client_dashlets_left" value="{tmpl_var name='client_dashlets_left'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
+			<div class="ctrlHolder">
+                <label for="client_dashlets_right">{tmpl_var name='client_dashlets_right_txt'}</label>
+                <input name="client_dashlets_right" id="client_dashlets_right" value="{tmpl_var name='client_dashlets_right'}" size="" maxlength="" type="text" class="textInput" />&nbsp;{tmpl_var name='available_dashlets_note_txt'} {tmpl_var name="available_dashlets_txt"}
+            </div>
             <div class="ctrlHolder">
                 <p class="label">{tmpl_var name='tab_change_discard_txt'}</p>
                 <div class="multiField">
@@ -45,7 +69,39 @@
                     {tmpl_var name='use_combobox'}<br/>{tmpl_var name='f5_to_reload_js_txt'}
                 </div>
             </div>
+			<div class="ctrlHolder">
+                <label for="customer_no_template">{tmpl_var name='customer_no_template_txt'}</label>
+                <input name="customer_no_template" id="customer_no_template" value="{tmpl_var name='customer_no_template'}" size="30" maxlength="255" type="text" class="textInput formLengthHalf" />
+            </div>
+			<div class="ctrlHolder">
+                <label for="customer_no_start">{tmpl_var name='customer_no_start_txt'}</label>
+                <input name="customer_no_start" id="customer_no_start" value="{tmpl_var name='customer_no_start'}" size="30" maxlength="255" type="text" class="textInput formLengthHalf" />
+            </div>
+			<div class="ctrlHolder">
+                <label for="customer_no_counter">{tmpl_var name='customer_no_counter_txt'}</label>
+                <input name="customer_no_counter" id="customer_no_counter" value="{tmpl_var name='customer_no_counter'}" size="30" maxlength="255" type="text" class="textInput formLengthHalf" />
+            </div>
+			<div class="ctrlHolder">
+                <label for="session_timeout">{tmpl_var name='session_timeout_txt'}</label>
+                <input name="session_timeout" id="session_timeout" value="{tmpl_var name='session_timeout'}" size="30" maxlength="255" type="text" class="textInput formLengthHalf" />
+            </div>
+			<div class="ctrlHolder">
+                <p class="label">{tmpl_var name='session_allow_endless_txt'}</p>
+                <div class="multiField">
+                    {tmpl_var name='session_allow_endless'}
+                </div>
+            </div>
             <div class="ctrlHolder">
+                <label for="min_password_length">{tmpl_var name='min_password_length_txt'}</label>
+                <input name="min_password_length" id="min_password_length" value="{tmpl_var name='min_password_length'}" size="30" maxlength="255" type="text" class="textInput" />
+            </div>
+            <div class="ctrlHolder">
+                <label for="min_password_strength">{tmpl_var name='min_password_strength_txt'}</label>
+                <select name="min_password_strength" id="min_password_strength" class="selectInput formLengthHalf">
+                    {tmpl_var name='min_password_strength'}
+                </select>
+            </div>
+			<div class="ctrlHolder">
                 <p class="label">{tmpl_var name='maintenance_mode_txt'}</p>
                 <div class="multiField">
                     {tmpl_var name='maintenance_mode'}

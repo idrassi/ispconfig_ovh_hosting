@@ -38,8 +38,8 @@ $tform_def_file = "form/ftp_user.tform.php";
 * End Form configuration
 ******************************************/
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('sites');
@@ -49,10 +49,10 @@ $app->uses('tpl,tform,tform_actions');
 $app->load('tform_actions');
 
 class page_action extends tform_actions {
-	
+
 	function onShowNew() {
 		global $app, $conf;
-		
+
 		// we will check only users, not admins
 		if($_SESSION["s"]["user"]["typ"] == 'user') {
 			if(!$app->tform->checkClientLimit('limit_ftp_user')) {
@@ -62,7 +62,7 @@ class page_action extends tform_actions {
 				$app->error('Reseller: '.$app->tform->wordbook["limit_ftp_user_txt"]);
 			}
 		}
-		
+
 		parent::onShowNew();
 	}
 
@@ -72,72 +72,79 @@ class page_action extends tform_actions {
 		 * If the names are restricted -> remove the restriction, so that the
 		 * data can be edited
 		 */
-		
+
 		$app->uses('getconf,tools_sites');
 		$global_config = $app->getconf->get_global_config('sites');
 		$ftpuser_prefix = $app->tools_sites->replacePrefix($global_config['ftpuser_prefix'], $this->dataRecord);
-		
+
 		if ($this->dataRecord['username'] != ""){
 			/* REMOVE the restriction */
 			$app->tpl->setVar("username", $app->tools_sites->removePrefix($this->dataRecord['username'], $this->dataRecord['username_prefix'], $ftpuser_prefix));
 		}
-        
-        $app->tpl->setVar("username_prefix", $app->tools_sites->getPrefix($this->dataRecord['username_prefix'], $ftpuser_prefix, $global_config['ftpuser_prefix']));
+
+		$app->tpl->setVar("username_prefix", $app->tools_sites->getPrefix($this->dataRecord['username_prefix'], $ftpuser_prefix, $global_config['ftpuser_prefix']));
 
 		parent::onShowEnd();
 	}
-	
+
 	function onSubmit() {
 		global $app, $conf;
-		
+
 		// Get the record of the parent domain
-		$parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval(@$this->dataRecord["parent_domain_id"]) . " AND ".$app->tform->getAuthSQL('r'));
-        if(!$parent_domain || $parent_domain['domain_id'] != @$this->dataRecord['parent_domain_id']) $app->tform->errorMessage .= $app->tform->lng("no_domain_perm");
-		
+		if(isset($this->dataRecord["parent_domain_id"])) {
+			$parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval(@$this->dataRecord["parent_domain_id"]) . " AND ".$app->tform->getAuthSQL('r'));
+			if(!$parent_domain || $parent_domain['domain_id'] != @$this->dataRecord['parent_domain_id']) $app->tform->errorMessage .= $app->tform->lng("no_domain_perm");
+		} else {
+			$tmp = $app->tform->getDataRecord($this->id);
+			$parent_domain = $app->db->queryOneRecord("select * FROM web_domain WHERE domain_id = ".$app->functions->intval($tmp["parent_domain_id"]) . " AND ".$app->tform->getAuthSQL('r'));
+			if(!$parent_domain) $app->tform->errorMessage .= $app->tform->lng("no_domain_perm");
+			unset($tmp);
+		}
+
 		// Set a few fixed values
 		$this->dataRecord["server_id"] = $parent_domain["server_id"];
-		
+
 		//die(print_r($this->dataRecord));
-		
+
 		if(isset($this->dataRecord['username']) && trim($this->dataRecord['username']) == '') $app->tform->errorMessage .= $app->tform->lng('username_error_empty').'<br />';
 		if(isset($this->dataRecord['username']) && empty($this->dataRecord['parent_domain_id'])) $app->tform->errorMessage .= $app->tform->lng('parent_domain_id_error_empty').'<br />';
-		if(isset($this->dataRecord['dir']) && stristr($this->dataRecord['dir'],'..')) $app->tform->errorMessage .= $app->tform->lng('dir_dot_error').'<br />';
-		if(isset($this->dataRecord['dir']) && stristr($this->dataRecord['dir'],'./')) $app->tform->errorMessage .= $app->tform->lng('dir_slashdot_error').'<br />';
-		
+		if(isset($this->dataRecord['dir']) && stristr($this->dataRecord['dir'], '..')) $app->tform->errorMessage .= $app->tform->lng('dir_dot_error').'<br />';
+		if(isset($this->dataRecord['dir']) && stristr($this->dataRecord['dir'], './')) $app->tform->errorMessage .= $app->tform->lng('dir_slashdot_error').'<br />';
+
 		parent::onSubmit();
 	}
-	
+
 	function onBeforeInsert() {
 		global $app, $conf, $interfaceConf;
-		
+
 		$app->uses('getconf,tools_sites');
 		$global_config = $app->getconf->get_global_config('sites');
 		$ftpuser_prefix = $app->tools_sites->replacePrefix($global_config['ftpuser_prefix'], $this->dataRecord);
 
-        $this->dataRecord['username_prefix'] = $ftpuser_prefix;
-		
+		$this->dataRecord['username_prefix'] = $ftpuser_prefix;
+
 		if ($app->tform->errorMessage == '') {
 			$this->dataRecord['username'] = $ftpuser_prefix . $this->dataRecord['username'];
 		}
-		
+
 		parent::onBeforeInsert();
 	}
 
-		function onAfterInsert() {
+	function onAfterInsert() {
 		global $app, $conf;
-		
+
 		$web = $app->db->queryOneRecord("SELECT * FROM web_domain WHERE domain_id = ".$app->functions->intval($this->dataRecord["parent_domain_id"]));
-		$server_id = $web["server_id"];
-		$dir = $web["document_root"];
-		$uid = $web["system_user"];
-		$gid = $web["system_group"];
-		
+		$server_id = $app->functions->intval($web["server_id"]);
+		$dir = $app->db->quote($web["document_root"]);
+		$uid = $app->db->quote($web["system_user"]);
+		$gid = $app->db->quote($web["system_group"]);
+
 		// The FTP user shall be owned by the same group then the website
-		$sys_groupid = $web['sys_groupid'];
-		
+		$sys_groupid = $app->functions->intval($web['sys_groupid']);
+
 		$sql = "UPDATE ftp_user SET server_id = $server_id, dir = '$dir', uid = '$uid', gid = '$gid', sys_groupid = '$sys_groupid' WHERE ftp_user_id = ".$this->id;
 		$app->db->query($sql);
-		}
+	}
 
 	function onBeforeUpdate() {
 		global $app, $conf, $interfaceConf;
@@ -145,39 +152,39 @@ class page_action extends tform_actions {
 		/*
 		 * If the names should be restricted -> do it!
 		 */
-		
+
 		$app->uses('getconf,tools_sites');
 		$global_config = $app->getconf->get_global_config('sites');
 		$ftpuser_prefix = $app->tools_sites->replacePrefix($global_config['ftpuser_prefix'], $this->dataRecord);
-		
-        $old_record = $app->tform->getDataRecord($this->id);
-        $ftpuser_prefix = $app->tools_sites->getPrefix($old_record['username_prefix'], $ftpuser_prefix);
-        $this->dataRecord['username_prefix'] = $ftpuser_prefix;
-        
+
+		$old_record = $app->tform->getDataRecord($this->id);
+		$ftpuser_prefix = $app->tools_sites->getPrefix($old_record['username_prefix'], $ftpuser_prefix);
+		$this->dataRecord['username_prefix'] = $ftpuser_prefix;
+
 		/* restrict the names */
 		if ($app->tform->errorMessage == '') {
 			$this->dataRecord['username'] = $ftpuser_prefix . $this->dataRecord['username'];
 		}
 	}
-	
+
 	function onAfterUpdate() {
 		global $app, $conf;
-		
+
 		//* When the site of the FTP user has been changed
 		if(isset($this->dataRecord['parent_domain_id']) && $this->oldDataRecord['parent_domain_id'] != $this->dataRecord['parent_domain_id']) {
 			$web = $app->db->queryOneRecord("SELECT * FROM web_domain WHERE domain_id = ".$app->functions->intval($this->dataRecord["parent_domain_id"]));
-			$server_id = $web["server_id"];
-			$dir = $web["document_root"];
-			$uid = $web["system_user"];
-			$gid = $web["system_group"];
-		
+			$server_id = $app->functions->intval($web["server_id"]);
+			$dir = $app->db->quote($web["document_root"]);
+			$uid = $app->db->quote($web["system_user"]);
+			$gid = $app->db->quote($web["system_group"]);
+
 			// The FTP user shall be owned by the same group then the website
-			$sys_groupid = $web['sys_groupid'];
-		
+			$sys_groupid = $app->functions->intval($web['sys_groupid']);
+
 			$sql = "UPDATE ftp_user SET server_id = $server_id, dir = '$dir', uid = '$uid', gid = '$gid', sys_groupid = '$sys_groupid' WHERE ftp_user_id = ".$this->id;
 			$app->db->query($sql);
 		}
-		
+
 		//* 2. check to ensure that the FTP user path is not changed to a path outside of the docroot by a normal user
 		if(isset($this->dataRecord['dir']) && $this->dataRecord['dir'] != $this->oldDataRecord['dir'] && !$app->auth->is_admin()) {
 			$vd = new validate_ftpuser;
@@ -187,15 +194,16 @@ class page_action extends tform_actions {
 			if($error_message != '') {
 				$ftp_data = $app->db->queryOneRecord("SELECT parent_domain_id FROM ftp_user WHERE ftp_user_id = '".$app->db->quote($app->tform->primary_id)."'");
 				$web = $app->db->queryOneRecord("SELECT * FROM web_domain WHERE domain_id = ".$app->functions->intval($ftp_data["parent_domain_id"]));
-				$dir = $web["document_root"];
+				$dir = $app->db->quote($web["document_root"]);
 				$sql = "UPDATE ftp_user SET dir = '$dir' WHERE ftp_user_id = ".$this->id;
 				$app->db->query($sql);
 				$app->log("Error in FTP path settings of FTP user ".$this->dataRecord['username'], 1);
 			}
-			
+
 		}
-		
+
 	}
+
 }
 
 $page = new page_action;

@@ -55,64 +55,64 @@ class monitor_tools {
 				$distname = 'Ubuntu';
 				$distid = 'debian40';
 				$distbaseid = 'debian';
-				$ver = explode(' ',$issue);
+				$ver = explode(' ', $issue);
 				$ver = array_filter($ver);
 				$ver = next($ver);
-				$mainver = explode('.',$ver);
+				$mainver = explode('.', $ver);
 				$mainver = array_filter($mainver);
 				$mainver = current($mainver).'.'.next($mainver);
 				switch ($mainver){
 				case "12.10":
 					$relname = "(Quantal Quetzal)";
-				break;
+					break;
 				case "12.04":
 					$relname = "(Precise Pangolin)";
-				break;
+					break;
 				case "11.10":
 					$relname = "(Oneiric Ocelot)";
-				break;
+					break;
 				case "11.14":
 					$relname = "(Natty Narwhal)";
-				break;
+					break;
 				case "10.10":
 					$relname = "(Maverick Meerkat)";
-				break;
+					break;
 				case "10.04":
 					$relname = "(Lucid Lynx)";
-				break;
+					break;
 				case "9.10":
 					$relname = "(Karmic Koala)";
-				break;
+					break;
 				case "9.04":
 					$relname = "(Jaunty Jackpole)";
-				break;
+					break;
 				case "8.10":
-				$relname = "(Intrepid Ibex)";
-				break;
+					$relname = "(Intrepid Ibex)";
+					break;
 				case "8.04":
 					$relname = "(Hardy Heron)";
-				break;
+					break;
 				case "7.10":
 					$relname = "(Gutsy Gibbon)";
-				break;
+					break;
 				case "7.04":
 					$relname = "(Feisty Fawn)";
-				break;
+					break;
 				case "6.10":
 					$relname = "(Edgy Eft)";
-				break;
+					break;
 				case "6.06":
 					$relname = "(Dapper Drake)";
-				break;
+					break;
 				case "5.10":
 					$relname = "(Breezy Badger)";
-				break;
+					break;
 				case "5.04":
 					$relname = "(Hoary Hedgehog)";
-				break;
+					break;
 				case "4.10":
 					$relname = "(Warty Warthog)";
-				break;
+					break;
 				default:
 					$relname = "UNKNOWN";
 				}
@@ -132,7 +132,7 @@ class monitor_tools {
 				$distver = 'Squeeze/Sid';
 				$distid = 'debian60';
 				$distbaseid = 'debian';
-			} elseif (strstr(trim(file_get_contents('/etc/debian_version')), '7.0') || strstr(trim(file_get_contents('/etc/debian_version')), '7.1') || trim(file_get_contents('/etc/debian_version')) == 'wheezy/sid') {
+			} elseif (strstr(trim(file_get_contents('/etc/debian_version')), '7.0') || substr(trim(file_get_contents('/etc/debian_version')),0,2) == '7.' || trim(file_get_contents('/etc/debian_version')) == 'wheezy/sid') {
 				$distname = 'Debian';
 				$distver = 'Wheezy/Sid';
 				$distid = 'debian60';
@@ -226,9 +226,9 @@ class monitor_tools {
 		return array('name' => $distname, 'version' => $distver, 'id' => $distid, 'baseid' => $distbaseid);
 	}
 
-		//** Email Quota
-		public function monitorEmailQuota() {
-				global $conf, $app;
+	//** Email Quota
+	public function monitorEmailQuota() {
+		global $conf, $app;
 
 		//* Initialize data array
 		$data = array();
@@ -246,15 +246,17 @@ class monitor_tools {
 		if(is_array($mailboxes)) {
 			foreach($mailboxes as $mb) {
 				$email = $mb['email'];
-				$email_parts = explode('@',$mb['email']);
+				$email_parts = explode('@', $mb['email']);
 				$filename = $mb['maildir'].'/.quotausage';
 				if(file_exists($filename) && !is_link($filename)) {
 					$quotafile = file($filename);
-					$data[$email]['used'] = trim($quotafile['1']);
+					preg_match('/storage.*?([0-9]+)/s', implode('',$quotafile), $storage_value);
+					$data[$email]['used'] = $storage_value[1];
+					$app->log("Mail storage $email: " . $storage_value[1], LOGLEVEL_DEBUG);
 					unset($quotafile);
 				} else {
-					exec('du -s '.escapeshellcmd($mb['maildir']),$out);
-					$parts = explode(' ',$out[0]);
+					exec('du -s '.escapeshellcmd($mb['maildir']), $out);
+					$parts = explode(' ', $out[0]);
 					$data[$email]['used'] = intval($parts[0])*1024;
 					unset($out);
 					unset($parts);
@@ -264,7 +266,7 @@ class monitor_tools {
 
 		unset($mailboxes);
 
-				//* Dovecot quota check Courier in progress lathama@gmail.com
+		//* Dovecot quota check Courier in progress lathama@gmail.com
 		/*
 				if($dir = opendir("/home/vmail")){
 						while (($quotafiles = readdir($dir)) !== false){
@@ -282,10 +284,10 @@ class monitor_tools {
 		$res['type'] = $type;
 		$res['data'] = $data;
 		$res['state'] = $state;
-				return $res;
-		}
+		return $res;
+	}
 
-		//** Filesystem Quota
+	//** Filesystem Quota
 	public function monitorHDQuota() {
 		global $conf;
 
@@ -370,6 +372,8 @@ class monitor_tools {
 		$server_id = intval($conf['server_id']);
 
 		/** The type of the data */
+
+
 		$type = 'server_load';
 
 		/*
@@ -473,7 +477,7 @@ class monitor_tools {
 	}
 
 	public function monitorDiskUsage() {
-		global $app,$conf;
+		global $app, $conf;
 
 		/* the id of the server as int */
 		$server_id = intval($conf['server_id']);
@@ -487,8 +491,8 @@ class monitor_tools {
 		/** Fetch the data of ALL devices into a array (needed for monitoring!) */
 		//$dfData = shell_exec('df -hT 2>/dev/null');
 		$app->uses('getconf');
-        $web_config = $app->getconf->get_server_config($conf['server_id'], 'web');
-        $dfData = shell_exec('df -hT|grep -v "'.$web_config['website_basedir'].'/" 2>/dev/null');
+		$web_config = $app->getconf->get_server_config($conf['server_id'], 'web');
+		$dfData = shell_exec('df -hT|grep -v "'.$web_config['website_basedir'].'/" 2>/dev/null');
 
 		// split into array
 		$df = explode("\n", $dfData);
@@ -515,9 +519,9 @@ class monitor_tools {
 				$usePercent = floatval($data[$i]['percent']);
 
 				//* get the free memsize
-				if(substr($data[$i]['available'],-1) == 'G') {
+				if(substr($data[$i]['available'], -1) == 'G') {
 					$freesize = floatval($data[$i]['available'])*1024;
-				} elseif(substr($data[$i]['available'],-1) == 'T') {
+				} elseif(substr($data[$i]['available'], -1) == 'T') {
 					$freesize = floatval($data[$i]['available'])*1024*1024;
 				} else {
 					$freesize = floatval($data[$i]['available']);
@@ -525,23 +529,23 @@ class monitor_tools {
 
 				//* We don't want to check some filesystem which have no sensible filling levels
 				switch ($data[$i]['type']) {
-					case 'iso9660':
-					case 'cramfs':
-					case 'udf':
-					case 'tmpfs':
-					case 'devtmpfs':
-					case 'udev':
-						break;
-					default:
-						if ($usePercent > 75 && $freesize < 2000)
-							$state = $this->_setState($state, 'info');
-						if ($usePercent > 80 && $freesize < 1000)
-							$state = $this->_setState($state, 'warning');
-						if ($usePercent > 90 && $freesize < 500)
-							$state = $this->_setState($state, 'critical');
-						if ($usePercent > 95 && $freesize < 100)
-							$state = $this->_setState($state, 'error');
-						break;
+				case 'iso9660':
+				case 'cramfs':
+				case 'udf':
+				case 'tmpfs':
+				case 'devtmpfs':
+				case 'udev':
+					break;
+				default:
+					if ($usePercent > 75 && $freesize < 2000)
+						$state = $this->_setState($state, 'info');
+					if ($usePercent > 80 && $freesize < 1000)
+						$state = $this->_setState($state, 'warning');
+					if ($usePercent > 90 && $freesize < 500)
+						$state = $this->_setState($state, 'critical');
+					if ($usePercent > 95 && $freesize < 100)
+						$state = $this->_setState($state, 'error');
+					break;
 				}
 			}
 		}
@@ -1061,7 +1065,7 @@ class monitor_tools {
 				/* fetch the next line */
 				$line = $tmp[$i];
 
-				if ((strpos($line, '[U_]') !== false) || (strpos($line, '[_U]') !== false)) {
+				if ((strpos($line, 'U_]') !== false) || (strpos($line, '[_U') !== false) || (strpos($line, 'U_U') !== false)) {
 					/* One Disk is not working.
 					 * if the next line starts with "[>" or "[=" then
 					 * recovery (resync) is in state and the state is
@@ -1145,56 +1149,59 @@ class monitor_tools {
 		/*
 		* 3ware Controller
 		*/
+		
 		system('which tw_cli', $retval);
 		if($retval === 0) {
-
-			$data['output'] = shell_exec('tw_cli info c0');
+			
+			// TYPOWORX FIX | Determine Controler-ID
+			$availableControlers = shell_exec('tw_cli info | grep -Eo "c[0-9]+');
+			$data['output'] = shell_exec('tw_cli info ' . $availableControlers);
 
 			$state = 'ok';
 			if(is_array($data['output'])) {
-			foreach ($data['output'] as $item) {
-				if (strpos($item, 'RAID') !== false) {
-					if (strpos($item, ' VERIFYING ') !== false) {
-						$this->_setState($state, 'info');
-					}
-					else if (strpos($item, ' MIGRATE-PAUSED ') !== false) {
-						$this->_setState($state, 'info');
-					}
-					else if (strpos($item, ' MIGRATING ') !== false) {
-						$this->_setState($state, 'ok');
-					}
-					else if (strpos($item, ' INITIALIZING ') !== false) {
-						$this->_setState($state, 'info');
-					}
-					else if (strpos($item, ' INIT-PAUSED ') !== false) {
-						$this->_setState($state, 'info');
-					}
-					else if (strpos($item, ' REBUILDING ') !== false) {
-						$this->_setState($state, 'info');
-					}
-					else if (strpos($item, ' REBUILD-PAUSED ') !== false) {
-						$this->_setState($state, 'warning');
-					}
-					else if (strpos($item, ' RECOVERY ') !== false) {
-						$this->_setState($state, 'warning');
-					}
-					else if (strpos($item, ' DEGRADED ') !== false) {
-						$this->_setState($state, 'critical');
-					}
-					else if (strpos($item, ' UNKNOWN ') !== false) {
-						$this->_setState($state, 'critical');
-					}
-					else if (strpos($item, ' OK ') !== false) {
-						$this->_setState($state, 'ok');
-					}
-					else if (strpos($item, ' OPTIMAL ') !== false) {
-						$this->_setState($state, 'ok');
-					}
-					else {
-						$this->_setState($state, 'critical');
+				foreach ($data['output'] as $item) {
+					if (strpos($item, 'RAID') !== false) {
+						if (strpos($item, ' VERIFYING ') !== false) {
+							$this->_setState($state, 'info');
+						}
+						else if (strpos($item, ' MIGRATE-PAUSED ') !== false) {
+								$this->_setState($state, 'info');
+							}
+						else if (strpos($item, ' MIGRATING ') !== false) {
+								$this->_setState($state, 'ok');
+							}
+						else if (strpos($item, ' INITIALIZING ') !== false) {
+								$this->_setState($state, 'info');
+							}
+						else if (strpos($item, ' INIT-PAUSED ') !== false) {
+								$this->_setState($state, 'info');
+							}
+						else if (strpos($item, ' REBUILDING ') !== false) {
+								$this->_setState($state, 'info');
+							}
+						else if (strpos($item, ' REBUILD-PAUSED ') !== false) {
+								$this->_setState($state, 'warning');
+							}
+						else if (strpos($item, ' RECOVERY ') !== false) {
+								$this->_setState($state, 'warning');
+							}
+						else if (strpos($item, ' DEGRADED ') !== false) {
+								$this->_setState($state, 'critical');
+							}
+						else if (strpos($item, ' UNKNOWN ') !== false) {
+								$this->_setState($state, 'critical');
+							}
+						else if (strpos($item, ' OK ') !== false) {
+								$this->_setState($state, 'ok');
+							}
+						else if (strpos($item, ' OPTIMAL ') !== false) {
+								$this->_setState($state, 'ok');
+							}
+						else {
+							$this->_setState($state, 'critical');
+						}
 					}
 				}
-			}
 			}
 		}
 
@@ -1300,54 +1307,54 @@ class monitor_tools {
 	}
 
 	public function monitorIPTables() {
-				global $conf;
+		global $conf;
 
-				/* the id of the server as int */
-				$server_id = intval($conf['server_id']);
+		/* the id of the server as int */
+		$server_id = intval($conf['server_id']);
 
-				/** The type of the data */
-				$type = 'iptables_rules';
+		/** The type of the data */
+		$type = 'iptables_rules';
 
-				/* This monitoring is only available if fail2ban is installed */
-				system('which iptables', $retval); // Debian, Ubuntu, Fedora
-				if ($retval === 0) {
-						/*  Get the data of the log */
-						$data['output'] = '<h2>iptables -S (ipv4)</h2>'.shell_exec('iptables -S 2>/dev/null');
+		/* This monitoring is only available if fail2ban is installed */
+		system('which iptables', $retval); // Debian, Ubuntu, Fedora
+		if ($retval === 0) {
+			/*  Get the data of the log */
+			$data['output'] = '<h2>iptables -S (ipv4)</h2>'.shell_exec('iptables -S 2>/dev/null');
 
-						/*
+			/*
 						 * At this moment, there is no state (maybe later)
 						 */
-						$state = 'no_state';
-				} else {
-						$state = 'no_state';
-						$data = '';
-				}
+			$state = 'no_state';
+		} else {
+			$state = 'no_state';
+			$data = '';
+		}
 
 
-				/* This monitoring is only available if fail2ban is installed */
-				system('which ip6tables', $retval); // Debian, Ubuntu, Fedora
-				if ($retval === 0) {
-						/*  Get the data of the log */
-						$data['output'] .= '<br><h2>ip6tables -S (ipv6)</h2>'.shell_exec('ip6tables -S 2>/dev/null');
+		/* This monitoring is only available if fail2ban is installed */
+		system('which ip6tables', $retval); // Debian, Ubuntu, Fedora
+		if ($retval === 0) {
+			/*  Get the data of the log */
+			$data['output'] .= '<br><h2>ip6tables -S (ipv6)</h2>'.shell_exec('ip6tables -S 2>/dev/null');
 
-						/*
+			/*
 						 * At this moment, there is no state (maybe later)
 						 */
-						$state = 'no_state';
-				} else {
-						$state = 'no_state';
-						$data = '';
-				}
+			$state = 'no_state';
+		} else {
+			$state = 'no_state';
+			$data = '';
+		}
 
-				/*
+		/*
 				 * Return the Result
 				 */
-				$res['server_id'] = $server_id;
-				$res['type'] = $type;
-				$res['data'] = $data;
-				$res['state'] = $state;
-				return $res;
-		}
+		$res['server_id'] = $server_id;
+		$res['type'] = $type;
+		$res['data'] = $data;
+		$res['state'] = $state;
+		return $res;
+	}
 
 	public function monitorSysLog() {
 		global $app;
@@ -1569,15 +1576,20 @@ class monitor_tools {
 		 * Now we have the last log in the array.
 		 * Check if the outdated-string is found...
 		 */
+		$clamav_outdated_warning = false;
+		$clamav_bytecode_updated = false;
 		foreach ($lastLog as $line) {
-			if (strpos(strtolower($line), 'outdated') !== false) {
-				/*
-				 * Outdatet is only info, because if we set this to warning, the server is
-				 * as long in state warning, as there is a new version of ClamAv which takes
-				 * sometimes weeks!
-				 */
-				$state = $this->_setState($state, 'info');
+			if (stristr($line,'outdated')) {
+				$clamav_outdated_warning = true;
 			}
+			if(stristr($line,'main.cld is up to date')) {
+				$clamav_bytecode_updated = true;
+			}
+		}
+		
+		//* Warn when clamav is outdated and main.cld update failed.
+		if($clamav_outdated_warning == true && $clamav_bytecode_updated == false) {
+			$state = $this->_setState($state, 'info');
 		}
 
 		/*
@@ -1657,108 +1669,108 @@ class monitor_tools {
 		}
 
 		switch ($log) {
-			case 'log_mail':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/mail.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = '/var/log/maillog';
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/mail.info';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/maillog';
-				}
-				break;
-			case 'log_mail_warn':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/mail.warn';
-				} elseif ($dist == 'redhat') {
-					$logfile = '/var/log/maillog';
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/mail.warn';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/maillog';
-				}
-				break;
-			case 'log_mail_err':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/mail.err';
-				} elseif ($dist == 'redhat') {
-					$logfile = '/var/log/maillog';
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/mail.err';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/maillog';
-				}
-				break;
-			case 'log_messages':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/syslog';
-				} elseif ($dist == 'redhat') {
-					$logfile = '/var/log/messages';
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/messages';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/messages';
-				}
-				break;
-			case 'log_ispc_cron':
-				if ($dist == 'debian') {
-					$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
-				} elseif ($dist == 'suse') {
-					$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/cron';
-				}
-				break;
-			case 'log_freshclam':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/clamav/freshclam.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = (is_file('/var/log/clamav/freshclam.log') ? '/var/log/clamav/freshclam.log' : '/var/log/freshclam.log');
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/freshclam.log';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/clamav/freshclam.log';
-				}
-				break;
-			case 'log_clamav':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/clamav/clamav.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = (is_file('/var/log/clamav/clamd.log') ? '/var/log/clamav/clamd.log' : '/var/log/maillog');
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/clamd.log';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/clamav/clamd.log';
-				}
-				break;
-			case 'log_fail2ban':
-				if ($dist == 'debian') {
-					$logfile = '/var/log/fail2ban.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = '/var/log/fail2ban.log';
-				} elseif ($dist == 'suse') {
-					$logfile = '/var/log/fail2ban.log';
-				} elseif ($dist == 'gentoo') {
-					$logfile = '/var/log/fail2ban.log';
-				}
-				break;
-			case 'log_ispconfig':
-				if ($dist == 'debian') {
-					$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
-				} elseif ($dist == 'redhat') {
-					$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
-				} elseif ($dist == 'suse') {
-					$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
-				} elseif ($dist == 'gentoo') {
-					$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
-				}
-				break;
-			default:
-				$logfile = '';
-				break;
+		case 'log_mail':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/mail.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = '/var/log/maillog';
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/mail.info';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/maillog';
+			}
+			break;
+		case 'log_mail_warn':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/mail.warn';
+			} elseif ($dist == 'redhat') {
+				$logfile = '/var/log/maillog';
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/mail.warn';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/maillog';
+			}
+			break;
+		case 'log_mail_err':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/mail.err';
+			} elseif ($dist == 'redhat') {
+				$logfile = '/var/log/maillog';
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/mail.err';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/maillog';
+			}
+			break;
+		case 'log_messages':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/syslog';
+			} elseif ($dist == 'redhat') {
+				$logfile = '/var/log/messages';
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/messages';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/messages';
+			}
+			break;
+		case 'log_ispc_cron':
+			if ($dist == 'debian') {
+				$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
+			} elseif ($dist == 'suse') {
+				$logfile = $conf['ispconfig_log_dir'] . '/cron.log';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/cron';
+			}
+			break;
+		case 'log_freshclam':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/clamav/freshclam.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = (is_file('/var/log/clamav/freshclam.log') ? '/var/log/clamav/freshclam.log' : '/var/log/freshclam.log');
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/freshclam.log';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/clamav/freshclam.log';
+			}
+			break;
+		case 'log_clamav':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/clamav/clamav.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = (is_file('/var/log/clamav/clamd.log') ? '/var/log/clamav/clamd.log' : '/var/log/maillog');
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/clamd.log';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/clamav/clamd.log';
+			}
+			break;
+		case 'log_fail2ban':
+			if ($dist == 'debian') {
+				$logfile = '/var/log/fail2ban.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = '/var/log/fail2ban.log';
+			} elseif ($dist == 'suse') {
+				$logfile = '/var/log/fail2ban.log';
+			} elseif ($dist == 'gentoo') {
+				$logfile = '/var/log/fail2ban.log';
+			}
+			break;
+		case 'log_ispconfig':
+			if ($dist == 'debian') {
+				$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
+			} elseif ($dist == 'redhat') {
+				$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
+			} elseif ($dist == 'suse') {
+				$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
+			} elseif ($dist == 'gentoo') {
+				$logfile = $conf['ispconfig_log_dir'] . '/ispconfig.log';
+			}
+			break;
+		default:
+			$logfile = '';
+			break;
 		}
 
 		// Getting the logfile content
@@ -1865,39 +1877,39 @@ class monitor_tools {
 		 * Calculate the weight of the old state
 		 */
 		switch ($oldState) {
-			case 'no_state': $oldInt = 0;
-				break;
-			case 'ok': $oldInt = 1;
-				break;
-			case 'unknown': $oldInt = 2;
-				break;
-			case 'info': $oldInt = 3;
-				break;
-			case 'warning': $oldInt = 4;
-				break;
-			case 'critical': $oldInt = 5;
-				break;
-			case 'error': $oldInt = 6;
-				break;
+		case 'no_state': $oldInt = 0;
+			break;
+		case 'ok': $oldInt = 1;
+			break;
+		case 'unknown': $oldInt = 2;
+			break;
+		case 'info': $oldInt = 3;
+			break;
+		case 'warning': $oldInt = 4;
+			break;
+		case 'critical': $oldInt = 5;
+			break;
+		case 'error': $oldInt = 6;
+			break;
 		}
 		/*
 		 * Calculate the weight of the new state
 		 */
 		switch ($newState) {
-			case 'no_state': $newInt = 0;
-				break;
-			case 'ok': $newInt = 1;
-				break;
-			case 'unknown': $newInt = 2;
-				break;
-			case 'info': $newInt = 3;
-				break;
-			case 'warning': $newInt = 4;
-				break;
-			case 'critical': $newInt = 5;
-				break;
-			case 'error': $newInt = 6;
-				break;
+		case 'no_state': $newInt = 0;
+			break;
+		case 'ok': $newInt = 1;
+			break;
+		case 'unknown': $newInt = 2;
+			break;
+		case 'info': $newInt = 3;
+			break;
+		case 'warning': $newInt = 4;
+			break;
+		case 'critical': $newInt = 5;
+			break;
+		case 'error': $newInt = 6;
+			break;
 		}
 
 		/*
@@ -1911,6 +1923,7 @@ class monitor_tools {
 	}
 
 	private function _getIntArray($line) {
+
 		/** The array of float found */
 		$res = array();
 		/* First build a array from the line */

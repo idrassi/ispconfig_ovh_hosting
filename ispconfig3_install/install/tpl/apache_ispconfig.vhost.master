@@ -4,10 +4,10 @@
 # for the ISPConfig controlpanel
 ######################################################
 
-{vhost_port_listen} Listen {vhost_port}
-NameVirtualHost *:{vhost_port}
+<tmpl_var name="vhost_port_listen"> Listen <tmpl_var name="vhost_port">
+NameVirtualHost *:<tmpl_var name="vhost_port">
 
-<VirtualHost _default_:{vhost_port}>
+<VirtualHost _default_:<tmpl_var name="vhost_port">>
   ServerAdmin webmaster@localhost
   
   <FilesMatch "\.ph(p3?|tml)$">
@@ -18,12 +18,18 @@ NameVirtualHost *:{vhost_port}
     DocumentRoot /home/www/ispconfig/
     SuexecUserGroup ispconfig ispconfig
     <Directory /home/www/ispconfig/>
-      Options -Indexes FollowSymLinks MultiViews +ExecCGI
+      Options -Indexes +FollowSymLinks +MultiViews +ExecCGI
       AllowOverride AuthConfig Indexes Limit Options FileInfo
-      AddHandler fcgid-script .php
+	  <FilesMatch "\.php$">
+		  SetHandler fcgid-script
+	  </FilesMatch>
       FCGIWrapper /home/www/php-fcgi-scripts/ispconfig/.php-fcgi-starter .php
+      <tmpl_if name='apache_version' op='>' value='2.2' format='version'>
+	  Require all granted
+	  <tmpl_else>
       Order allow,deny
       Allow from all
+	  </tmpl_if>
     </Directory>
     IPCCommTimeout  7200
 	MaxRequestLen 15728640
@@ -35,10 +41,14 @@ NameVirtualHost *:{vhost_port}
     AddType application/x-httpd-php .php
     <Directory /usr/local/ispconfig/interface/web>
       # php_admin_value open_basedir "/usr/local/ispconfig/interface:/usr/share:/tmp"
-      Options FollowSymLinks
+      Options +FollowSymLinks
       AllowOverride None
+      <tmpl_if name='apache_version' op='>' value='2.2' format='version'>
+	  Require all granted
+	  <tmpl_else>
       Order allow,deny
       Allow from all
+	  </tmpl_if>
 	  php_value magic_quotes_gpc        0
     </Directory>
   </IfModule>
@@ -52,22 +62,38 @@ NameVirtualHost *:{vhost_port}
   </IfModule>
 
   # SSL Configuration
-  {ssl_comment}SSLEngine On
-  {ssl_comment}SSLCertificateFile /usr/local/ispconfig/interface/ssl/ispserver.crt
-  {ssl_comment}SSLCertificateKeyFile /usr/local/ispconfig/interface/ssl/ispserver.key
-  {ssl_bundle_comment}SSLCACertificateFile /usr/local/ispconfig/interface/ssl/ispserver.bundle
+  <tmpl_var name="ssl_comment">SSLEngine On
+  <tmpl_var name="ssl_comment">SSLCertificateFile /usr/local/ispconfig/interface/ssl/ispserver.crt
+  <tmpl_var name="ssl_comment">SSLCertificateKeyFile /usr/local/ispconfig/interface/ssl/ispserver.key
+  <tmpl_var name="ssl_bundle_comment">SSLCertificateChainFile /usr/local/ispconfig/interface/ssl/ispserver.bundle
+  
+	SSLOptions +FakeBasicAuth +ExportCertData +StrictRequire
+    <FilesMatch "\.(cgi|shtml|phtml|php)$">
+		SSLOptions +StdEnvVars
+	</FilesMatch>
+	<Directory /usr/lib/cgi-bin>
+		SSLOptions +StdEnvVars
+	</Directory>
 
 </VirtualHost>
 
 <Directory /home/www/php-cgi-scripts>
     AllowOverride None
+	<tmpl_if name='apache_version' op='>' value='2.2' format='version'>
+	Require all denied
+	<tmpl_else>
     Order Deny,Allow
     Deny from all
+	</tmpl_if>
 </Directory>
 
 <Directory /home/www/php-fcgi-scripts>
     AllowOverride None
+    <tmpl_if name='apache_version' op='>' value='2.2' format='version'>
+	Require all denied
+	<tmpl_else>
     Order Deny,Allow
     Deny from all
+	</tmpl_if>
 </Directory>
 

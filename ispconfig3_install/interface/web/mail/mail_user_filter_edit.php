@@ -38,8 +38,8 @@ $tform_def_file = "form/mail_user_filter.tform.php";
 * End Form configuration
 ******************************************/
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('mail');
@@ -49,42 +49,42 @@ $app->uses('tpl,tform,tform_actions');
 $app->load('tform_actions');
 
 class page_action extends tform_actions {
-	
+
 	function onShowNew() {
 		global $app, $conf;
-		
+
 		// we will check only users, not admins
 		if($_SESSION["s"]["user"]["typ"] == 'user') {
-			if(!$app->tform->checkClientLimit('limit_mailfilter',"")) {
+			if(!$app->tform->checkClientLimit('limit_mailfilter', "")) {
 				$app->error($app->tform->lng("limit_mailfilter_txt"));
 			}
-			if(!$app->tform->checkResellerLimit('limit_mailfilter',"")) {
+			if(!$app->tform->checkResellerLimit('limit_mailfilter', "")) {
 				$app->error('Reseller: '.$app->tform->lng("limit_mailfilter_txt"));
 			}
 		}
-		
+
 		parent::onShowNew();
 	}
-	
+
 	function onSubmit() {
 		global $app, $conf;
-		
+
 		// Get the parent mail_user record
 		$mailuser = $app->db->queryOneRecord("SELECT * FROM mail_user WHERE mailuser_id = '".$app->functions->intval($_REQUEST["mailuser_id"])."' AND ".$app->tform->getAuthSQL('r'));
-		
+
 		// Check if Domain belongs to user
 		if($mailuser["mailuser_id"] != $_POST["mailuser_id"]) $app->tform->errorMessage .= $app->tform->wordbook["no_mailuser_perm"];
-		
+
 		// Set the mailuser_id
 		$this->dataRecord["mailuser_id"] = $mailuser["mailuser_id"];
-		
+
 		// Remove leading dots
-		if(substr($this->dataRecord['target'],0,1) == '.') $this->dataRecord['target'] = substr($this->dataRecord['target'],1);
-		
+		if(substr($this->dataRecord['target'], 0, 1) == '.') $this->dataRecord['target'] = substr($this->dataRecord['target'], 1);
+
 		// Check the client limits, if user is not the admin
 		if($_SESSION["s"]["user"]["typ"] != 'admin') { // if user is not admin
 			// Get the limits of the client
-			$client_group_id = $_SESSION["s"]["user"]["default_group"];
+			$client_group_id = $app->functions->intval($_SESSION["s"]["user"]["default_group"]);
 			$client = $app->db->queryOneRecord("SELECT limit_mailfilter FROM sys_group, client WHERE sys_group.client_id = client.client_id and sys_group.groupid = $client_group_id");
 
 			// Check if the user may add another filter
@@ -96,166 +96,10 @@ class page_action extends tform_actions {
 				unset($tmp);
 			}
 		} // end if user is not admin
-		
+
 		parent::onSubmit();
 	}
-	
-	/*
-	function onAfterInsert() {
-		global $app, $conf;
-		
-		$this->onAfterUpdate();
-		
-		$app->db->query("UPDATE mail_user_filter SET sys_groupid = ".$mailuser['sys_groupid']." WHERE filter_id = ".$this->id);
-	}
-	
-	function onAfterUpdate() {
-		global $app, $conf;
-		
-		$mailuser = $app->db->queryOneRecord("SELECT custom_mailfilter FROM mail_user WHERE mailuser_id = ".$this->dataRecord["mailuser_id"]);
-		$skip = false;
-		$lines = explode("\n",$mailuser['custom_mailfilter']);
-		$out = '';
-		$found = false;
-		
-		foreach($lines as $line) {
-			$line = rtrim($line);
-			if($line == '### BEGIN FILTER_ID:'.$this->id) {
-				$skip = true;
-				$found = true;
-			}
-			if($skip == false && $line != '') $out .= $line ."\n";
-			if($line == '### END FILTER_ID:'.$this->id) {
-				$out .= $this->getRule();
-				$skip = false;
-			}
-		}
-		
-		// We did not found our rule, so we add it now as first rule.
-		if($found == false) {
-			$new_rule = $this->getRule();
-			$out = $new_rule . $out;
-		}
-		
-		$out = $app->db->quote($out);
-		$app->db->datalogUpdate('mail_user', "custom_mailfilter = '$out'", 'mailuser_id', $this->dataRecord["mailuser_id"]);
-	
-	}
-	
-	function getRule() {
-		
-		global $app,$conf;
-		
-		$app->uses("getconf");
-		$mailuser_rec = $app->db->queryOneRecord("SELECT server_id FROM mail_user WHERE mailuser_id = ".$app->functions->intval($this->dataRecord["mailuser_id"]));
-		$mail_config = $app->getconf->get_server_config($app->functions->intval($mailuser_rec["server_id"]),'mail');
-		
-		if($mail_config['mail_filter_syntax'] == 'sieve') {
-			
-			// #######################################################
-			// Filter in Sieve Syntax
-			// #######################################################
-			
-			$content = '';
-			$content .= '### BEGIN FILTER_ID:'.$this->id."\n";
-			
-			//$content .= 'require ["fileinto", "regex", "vacation"];'."\n";
-			
-			$content .= 'if header :regex    ["'.strtolower($this->dataRecord["source"]).'"] ["';
-			
-			$searchterm = preg_quote($this->dataRecord["searchterm"]);
-			
-			if($this->dataRecord["op"] == 'contains') {
-				$content .= ".*".$searchterm;
-			} elseif ($this->dataRecord["op"] == 'is') {
-				$content .= $searchterm."$";
-			} elseif ($this->dataRecord["op"] == 'begins') {
-				$content .= " ".$searchterm."";
-			} elseif ($this->dataRecord["op"] == 'ends') {
-				$content .= ".*".$searchterm."$";
-			}
-			
-			$content .= '"] {'."\n";
-			
-			if($this->dataRecord["action"] == 'move') {
-				$content .= '    fileinto "'.$this->dataRecord["target"].'";' . "\n";
-			} else {
-				$content .= "    discard;\n";
-			}
-			
-			$content .= "    stop;\n}\n";
-			
-			$content .= '### END FILTER_ID:'.$this->id."\n";
-		
-		} else {
-		
-			// #######################################################
-			// Filter in Maildrop Syntax
-			// #######################################################
-			$content = '';
-			$content .= '### BEGIN FILTER_ID:'.$this->id."\n";
 
-			$TargetNoQuotes = $this->dataRecord["target"];
-			$TargetQuotes = "\"$TargetNoQuotes\"";
-
-			$TestChDirNoQuotes = '$DEFAULT/.'.$TargetNoQuotes;
-			$TestChDirQuotes = "\"$TestChDirNoQuotes\"";
-
-			$MailDirMakeNoQuotes = $TargetQuotes.' $DEFAULT';
-
-			$EchoTargetFinal = $TargetNoQuotes;
-
-
-			if($this->dataRecord["action"] == 'move') {
-
-			$content .= "
-`test -e ".$TestChDirQuotes." && exit 1 || exit 0`
-if ( ".'$RETURNCODE'." != 1 )
-{
-	`maildirmake -f $MailDirMakeNoQuotes`
-	`chmod -R 0700 ".$TestChDirQuotes."`
-	`echo \"INBOX.$EchoTargetFinal\" >> ".'$DEFAULT'."/courierimapsubscribed`
-}
-";
-			}
-
-			$content .= "if (/^".$this->dataRecord["source"].":";
-
-			$searchterm = preg_quote($this->dataRecord["searchterm"]);
-
-			if($this->dataRecord["op"] == 'contains') {
-				$content .= ".*".$searchterm."/:h)\n";
-			} elseif ($this->dataRecord["op"] == 'is') {
-				$content .= $searchterm."$/:h)\n";
-			} elseif ($this->dataRecord["op"] == 'begins') {
-				$content .= " ".$searchterm."/:h)\n";
-			} elseif ($this->dataRecord["op"] == 'ends') {
-				$content .= ".*".$searchterm."$/:h)\n";
-			}
-
-			$content .= "{\n";
-			$content .= "exception {\n";
-
-			if($this->dataRecord["action"] == 'move') {
-				$content .= 'ID' . "$this->id" . 'EndFolder = "$DEFAULT/.' . $this->dataRecord['target'] . '/"' . "\n";
-				$content .= "to ". '$ID' . "$this->id" . 'EndFolder' . "\n";
-			} else {
-				$content .= "to /dev/null\n";
-			}
-
-			$content .= "}\n";
-			$content .= "}\n";
-		
-			//}
-		
-			$content .= '### END FILTER_ID:'.$this->id."\n";
-		
-		}
-		
-		return $content;
-	}
-	*/
-	
 }
 
 $page = new page_action;

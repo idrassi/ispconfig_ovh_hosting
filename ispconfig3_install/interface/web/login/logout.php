@@ -27,8 +27,8 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
 EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 /*
  * Check if the logout is forced
@@ -40,11 +40,12 @@ if (isset($_GET['l']) && ($_GET['l']== 1)) $forceLogout = true;
  * if the admin is logged in as client, then ask, if the admin want't to
  * "re-login" as admin again
  */
-if ((isset($_SESSION['s_old']) && ($_SESSION['s_old']['user']['typ'] == 'admin')) &&
+if ((isset($_SESSION['s_old']) && ($_SESSION['s_old']['user']['typ'] == 'admin' || $app->auth->has_clients($_SESSION['s_old']['user']['userid']))) &&
 	(!$forceLogout)){
+	$utype = ($_SESSION['s_old']['user']['typ'] == 'admin' ? 'admin' : 'reseller');
 	echo '
 		<br /> <br />	<br /> <br />
-		Do you want to re-login as admin or log out?<br />
+		Do you want to re-login as ' . $utype . ' or log out?<br />
 		<div style="visibility:hidden">
 			<input type="text" name="username" value="' . $_SESSION['s_old']['user']['username'] . '" />
 			<input type="password" name="passwort" value="' . $_SESSION['s_old']['user']['passwort'] .'" />
@@ -52,14 +53,14 @@ if ((isset($_SESSION['s_old']) && ($_SESSION['s_old']['user']['typ'] == 'admin')
 		<input type="hidden" name="s_mod" value="login" />
 		<input type="hidden" name="s_pg" value="index" />
 	    <div class="wf_actions buttons">
-	      <button class="positive iconstxt icoPositive" type="button" value="Yes, re-login as Admin" onclick="submitLoginForm(' . "'pageForm'" . ');"><span>Yes, re-login as Admin</span></button>
+	      <button class="positive iconstxt icoPositive" type="button" value="Yes, re-login as ' . $utype . '" onclick="submitLoginForm(' . "'pageForm'" . ');"><span>Yes, re-login as ' . $utype . '</span></button>
 	      <button class="negative iconstxt icoNegative" type="button" value="No, logout" onclick="loadContent('. "'login/logout.php?l=1'" . ');"><span>No, logout</span></button>
 	    </div>
 	';
 	exit;
 }
 
-$app->plugin->raiseEvent('logout',true);
+$app->plugin->raiseEvent('logout', true);
 
 $_SESSION["s"]["user"] = null;
 $_SESSION["s"]["module"] = null;
@@ -68,12 +69,12 @@ $_SESSION['s_old'] = null;
 //header("Location: ../index.php?phpsessid=".$_SESSION["s"]["id"]);
 
 if($_SESSION["s"]["site"]["logout"] != '') {
-	echo('URL_REDIRECT:'.$_SESSION["s"]["site"]["logout"]);
+	echo 'URL_REDIRECT:'.$_SESSION["s"]["site"]["logout"];
 } else {
 	if($conf["interface_logout_url"] != '') {
-		echo('URL_REDIRECT:'.$conf["interface_logout_url"]);
+		echo 'URL_REDIRECT:'.$conf["interface_logout_url"];
 	} else {
-		echo('URL_REDIRECT:index.php');
+		echo 'URL_REDIRECT:index.php';
 	}
 }
 // Destroy the session completely now

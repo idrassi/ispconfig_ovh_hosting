@@ -15,6 +15,8 @@ firewall=bastille
 loglevel=2
 admin_notify_events=1
 backup_dir=/var/backup
+backup_dir_is_mount=n
+backup_dir_mount_cmd=
 backup_mode=rootgz
 monit_url=
 monit_user=
@@ -22,6 +24,7 @@ monit_password=
 munin_url=
 munin_user=
 munin_password=
+monitor_system_updates=y
 
 [mail]
 module=postfix_mysql
@@ -66,7 +69,7 @@ nginx_group=www-data
 apps_vhost_port=8081
 apps_vhost_ip=_default_
 apps_vhost_servername=
-php_open_basedir=[website_path]/web:[website_path]/private:[website_path]/tmp:/home/www/[website_domain]/web:/srv/www/[website_domain]/web:/usr/share/php5:/usr/share/php:/tmp:/usr/share/phpmyadmin:/etc/phpmyadmin:/var/lib/phpmyadmin:/usr/share/php
+php_open_basedir=[website_path]/web:[website_path]/private:[website_path]/tmp:/home/www/[website_domain]/web:/srv/www/[website_domain]/web:/usr/share/php5:/usr/share/php:/tmp:/usr/share/phpmyadmin:/etc/phpmyadmin:/var/lib/phpmyadmin
 htaccess_allow_override=All
 awstats_conf_dir=/etc/awstats
 awstats_data_dir=/var/lib/awstats

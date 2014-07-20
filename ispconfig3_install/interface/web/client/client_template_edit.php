@@ -38,8 +38,8 @@ $tform_def_file = "form/client_template.tform.php";
 * End Form configuration
 ******************************************/
 
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 //* Check permissions for module
 $app->auth->check_module_permissions('client');
@@ -51,9 +51,22 @@ $app->load('tform_actions');
 
 class page_action extends tform_actions {
 
-	function onBeforeUpdate() {
+	
+	function onSubmit() {
 		global $app;
 		
+		//* Resellers shall not be able to create another reseller or set reseller specific settings
+		if($_SESSION["s"]["user"]["typ"] == 'user') {
+			$this->dataRecord['limit_client'] = 0;
+			$this->dataRecord['limit_domainmodule'] = 0;
+		}
+		
+		parent::onSubmit();
+	}
+	
+	function onBeforeUpdate() {
+		global $app;
+
 		if(isset($this->dataRecord['template_type'])) {
 			//* Check if the template_type has been changed
 			$rec = $app->db->queryOneRecord("SELECT template_type from client_template WHERE template_id = ".$this->id);
@@ -65,31 +78,32 @@ class page_action extends tform_actions {
 			unset($rec);
 		}
 	}
-	
-	
+
+
 	/*
 	 This function is called automatically right after
 	 the data was successful updated in the database.
 	*/
 	function onAfterUpdate() {
 		global $app;
-		
-        $app->uses('client_templates');
+
+		$app->uses('client_templates');
 		/*
 		 * the template has changed. apply the new data to all clients
 		 */
 		if ($this->dataRecord["template_type"] == 'm'){
 			$sql = "SELECT client_id FROM client WHERE template_master = " . $this->id;
 		} else {
-			$sql = "SELECT client_id FROM client WHERE template_additional LIKE '%/" . $this->id . "/%' OR template_additional LIKE '" . $this->id . "/%' OR template_additional LIKE '%/" . $this->id . "'";
+			$sql = "SELECT client_id FROM client WHERE template_additional LIKE '%/" . $this->id . "/%' OR template_additional LIKE '" . $this->id . "/%' OR template_additional LIKE '%/" . $this->id . "' UNION SELECT client_id FROM client_template_assigned WHERE client_template_id = " . $this->id;
 		}
 		$clients = $app->db->queryAllRecords($sql);
 		if (is_array($clients)){
 			foreach ($clients as $client){
-                $app->client_templates->apply_client_templates($client['client_id']);
+				$app->client_templates->apply_client_templates($client['client_id']);
 			}
 		}
 	}
+
 }
 
 $page = new page_action;

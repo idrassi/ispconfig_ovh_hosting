@@ -1,6 +1,6 @@
 <?php
-require_once('../../lib/config.inc.php');
-require_once('../../lib/app.inc.php');
+require_once '../../lib/config.inc.php';
+require_once '../../lib/app.inc.php';
 
 /******************************************
 * Begin Form configuration
@@ -19,12 +19,12 @@ $app->load('listform_actions');
 
 
 class list_action extends listform_actions {
-	
+
 }
 
 $list = new list_action;
 
-$list->SQLExtWhere = "mail_user_filter.mailuser_id = ".$_SESSION['s']['user']['mailuser_id'];
+$list->SQLExtWhere = "mail_user_filter.mailuser_id = ".$app->functions->intval($_SESSION['s']['user']['mailuser_id']);
 
 $list->onLoad();
 

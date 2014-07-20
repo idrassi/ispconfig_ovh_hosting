@@ -198,7 +198,7 @@ Optional:
 Install a webbased Email Client
 
 apt-get install squirrelmail
-ln -s /usr/share/squirrelmail/ /var/www/webmail
+ln -s /usr/share/squirrelmail/ /home/www/webmail
 
 Access squirrelmail:
 

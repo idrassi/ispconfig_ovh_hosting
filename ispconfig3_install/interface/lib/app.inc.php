@@ -48,6 +48,8 @@ class app {
 	private $_wb;
 	private $_loaded_classes = array();
 	private $_conf;
+	
+	public $loaded_plugins = array();
 
 	public function __construct() {
 		global $conf;
@@ -55,7 +57,7 @@ class app {
 		if (isset($_REQUEST['GLOBALS']) || isset($_FILES['GLOBALS']) || isset($_REQUEST['s']) || isset($_REQUEST['s_old']) || isset($_REQUEST['conf'])) {
 			die('Internal Error: var override attempt detected');
 		}
-
+		
 		$this->_conf = $conf;
 		if($this->_conf['start_db'] == true) {
 			$this->load('db_'.$this->_conf['db_type']);
@@ -64,25 +66,58 @@ class app {
 
 		//* Start the session
 		if($this->_conf['start_session'] == true) {
-			
-			$this->uses('session');
-			session_set_save_handler(	array($this->session, 'open'),
-										array($this->session, 'close'),
-										array($this->session, 'read'),
-										array($this->session, 'write'),
-										array($this->session, 'destroy'),
-										array($this->session, 'gc'));
-			
-			session_start();
 
+			$this->uses('session');
+			$sess_timeout = $this->conf('interface', 'session_timeout');
+			if($sess_timeout) {
+				/* check if user wants to stay logged in */
+				if(isset($_POST['s_mod']) && isset($_POST['s_pg']) && $_POST['s_mod'] == 'login' && $_POST['s_pg'] == 'index' && isset($_POST['stay']) && $_POST['stay'] == '1') {
+					/* check if staying logged in is allowed */
+					$this->uses('ini_parser');
+					$tmp = $this->db->queryOneRecord('SELECT config FROM sys_ini WHERE sysini_id = 1');
+					$tmp = $this->ini_parser->parse_ini_string(stripslashes($tmp['config']));
+					if(!isset($tmp['misc']['session_allow_endless']) || $tmp['misc']['session_allow_endless'] != 'y') {
+						$this->session->set_timeout($sess_timeout);
+						session_set_cookie_params(($sess_timeout * 60) + 300); // make the cookie live 5 minutes longer
+					} else {
+						// we are doing login here, so we need to set the session data
+						$this->session->set_permanent(true);
+						$this->session->set_timeout(365 * 24 * 3600); // one year
+						session_set_cookie_params(365 * 24 * 3600); // make the cookie live 5 minutes longer
+					}
+				} else {
+					$this->session->set_timeout($sess_timeout);
+					session_set_cookie_params(($sess_timeout * 60) + 300); // make the cookie live 5 minutes longer
+				}
+			} else {
+				session_set_cookie_params(0); // until browser is closed
+			}
+			
+			session_set_save_handler( array($this->session, 'open'),
+				array($this->session, 'close'),
+				array($this->session, 'read'),
+				array($this->session, 'write'),
+				array($this->session, 'destroy'),
+				array($this->session, 'gc'));
+
+			session_start();
+			
 			//* Initialize session variables
 			if(!isset($_SESSION['s']['id']) ) $_SESSION['s']['id'] = session_id();
 			if(empty($_SESSION['s']['theme'])) $_SESSION['s']['theme'] = $conf['theme'];
 			if(empty($_SESSION['s']['language'])) $_SESSION['s']['language'] = $conf['language'];
 		}
 
-        $this->uses('functions'); // we need this before all others!
+		$this->uses('functions'); // we need this before all others!
 		$this->uses('auth,plugin');
+	}
+
+	public function __get($prop) {
+		if(property_exists($this, $prop)) return $this->{$prop};
+		
+		$this->uses($prop);
+		if(property_exists($this, $prop)) return $this->{$prop};
+		else return null;
 	}
 	
 	public function __destruct() {
@@ -95,8 +130,8 @@ class app {
 			foreach($cl as $classname) {
 				$classname = trim($classname);
 				//* Class is not loaded so load it
-				if(!array_key_exists($classname, $this->_loaded_classes)) {
-					include_once(ISPC_CLASS_PATH."/$classname.inc.php");
+				if(!array_key_exists($classname, $this->_loaded_classes) && is_file(ISPC_CLASS_PATH."/$classname.inc.php")) {
+					include_once ISPC_CLASS_PATH."/$classname.inc.php";
 					$this->$classname = new $classname();
 					$this->_loaded_classes[$classname] = true;
 				}
@@ -109,12 +144,30 @@ class app {
 		if(is_array($fl)) {
 			foreach($fl as $file) {
 				$file = trim($file);
-				include_once(ISPC_CLASS_PATH."/$file.inc.php");
+				include_once ISPC_CLASS_PATH."/$file.inc.php";
+			}
+		}
+	}
+	
+	public function conf($plugin, $key, $value = null) {
+		if(is_null($value)) {
+			$tmpconf = $this->db->queryOneRecord("SELECT `value` FROM `sys_config` WHERE `group` = '" . $this->db->quote($plugin) . "' AND `name` = '" . $this->db->quote($key) . "'");
+			if($tmpconf) return $tmpconf['value'];
+			else return null;
+		} else {
+			if($value === false) {
+				$this->db->query("DELETE FROM `sys_config` WHERE `group` = '" . $this->db->quote($plugin) . "' AND `name` = '" . $this->db->quote($key) . "'");
+				return null;
+			} else {
+				$this->db->query("REPLACE INTO `sys_config` (`group`, `name`, `value`) VALUES ('" . $this->db->quote($plugin) . "', '" . $this->db->quote($key) . "', '" . $this->db->quote($value) . "')");
+				return $value;
 			}
 		}
 	}
 
 	/** Priority values are: 0 = DEBUG, 1 = WARNING,  2 = ERROR */
+
+
 	public function log($msg, $priority = 0) {
 		global $conf;
 		if($priority >= $this->_conf['log_priority']) {
@@ -196,12 +249,12 @@ class app {
 	//** Helper function to load the language files.
 	public function load_language_file($filename) {
 		$filename = ISPC_ROOT_PATH.'/'.$filename;
-		if(substr($filename,-4) != '.lng') $this->error('Language file has wrong extension.');
+		if(substr($filename, -4) != '.lng') $this->error('Language file has wrong extension.');
 		if(file_exists($filename)) {
-			@include($filename);
+			@include $filename;
 			if(is_array($wb)) {
 				if(is_array($this->_wb)) {
-					$this->_wb = array_merge($this->_wb,$wb);
+					$this->_wb = array_merge($this->_wb, $wb);
 				} else {
 					$this->_wb = $wb;
 				}
@@ -213,12 +266,12 @@ class app {
 		$this->tpl->setVar('app_title', $this->_conf['app_title']);
 		if(isset($_SESSION['s']['user'])) {
 			$this->tpl->setVar('app_version', $this->_conf['app_version']);
-            // get pending datalog changes
-            $datalog = $this->db->datalogStatus();
-            $this->tpl->setVar('datalog_changes_txt', $this->lng('datalog_changes_txt'));
-            $this->tpl->setVar('datalog_changes_end_txt', $this->lng('datalog_changes_end_txt'));
-            $this->tpl->setVar('datalog_changes_count', $datalog['count']);
-            $this->tpl->setLoop('datalog_changes', $datalog['entries']);
+			// get pending datalog changes
+			$datalog = $this->db->datalogStatus();
+			$this->tpl->setVar('datalog_changes_txt', $this->lng('datalog_changes_txt'));
+			$this->tpl->setVar('datalog_changes_end_txt', $this->lng('datalog_changes_end_txt'));
+			$this->tpl->setVar('datalog_changes_count', $datalog['count']);
+			$this->tpl->setLoop('datalog_changes', $datalog['entries']);
 		} else {
 			$this->tpl->setVar('app_version', '');
 		}
@@ -253,13 +306,13 @@ class app {
 			$this->tpl->setVar('cpuser', $_SESSION['s']['user']['username']);
 			$this->tpl->setVar('logout_txt', $this->lng('logout_txt'));
 			/* Show search field only for normal users, not mail users */
-			if(stristr($_SESSION['s']['user']['username'],'@')){
+			if(stristr($_SESSION['s']['user']['username'], '@')){
 				$this->tpl->setVar('usertype', 'mailuser');
 			} else {
 				$this->tpl->setVar('usertype', 'normaluser');
 			}
 		}
-		
+
 		/* Global Search */
 		$this->tpl->setVar('globalsearch_resultslimit_of_txt', $this->lng('globalsearch_resultslimit_of_txt'));
 		$this->tpl->setVar('globalsearch_resultslimit_results_txt', $this->lng('globalsearch_resultslimit_results_txt'));

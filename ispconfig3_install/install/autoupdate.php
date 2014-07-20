@@ -41,7 +41,7 @@ error_reporting(E_ALL|E_STRICT);
 if (!file_exists('autoupdate')) {
 
 	//** The banner on the command line
-	echo "\n\n".str_repeat('-',80)."\n";
+	echo "\n\n".str_repeat('-', 80)."\n";
 	echo " _____ ___________   _____              __ _         ____
 |_   _/  ___| ___ \ /  __ \            / _(_)       /__  \
   | | \ `--.| |_/ / | /  \/ ___  _ __ | |_ _  __ _    _/ /
@@ -50,19 +50,19 @@ if (!file_exists('autoupdate')) {
  \___/\____/\_|      \____/\___/|_| |_|_| |_|\__, | \____/
                                               __/ |
                                              |___/ ";
-	echo "\n".str_repeat('-',80)."\n";
+	echo "\n".str_repeat('-', 80)."\n";
 	echo "\n\n>>This script is for internal use only! Please use update.php!  \n\n";
 	exit;
 }
 
 //** Include the library with the basic installer functions
-require_once('lib/install.lib.php');
+require_once 'lib/install.lib.php';
 
 //** Include the library with the basic updater functions
-require_once('lib/update.lib.php');
+require_once 'lib/update.lib.php';
 
 //** Include the base class of the installer class
-require_once('lib/installer_base.lib.php');
+require_once 'lib/installer_base.lib.php';
 
 //** Ensure that current working directory is install directory
 $cur_dir = getcwd();
@@ -75,16 +75,16 @@ define('ISPC_INSTALL_ROOT', realpath(dirname(__FILE__).'/../'));
 //** Get distribution identifier
 $dist = get_distname();
 
-include_once("/usr/local/ispconfig/server/lib/config.inc.php");
+include_once "/usr/local/ispconfig/server/lib/config.inc.php";
 $conf_old = $conf;
 unset($conf);
 
 if($dist['id'] == '') die('Linux distribution or version not recognized.');
 
 //** Include the distribution-specific installer class library and configuration
-if(is_file('dist/lib/'.$dist['baseid'].'.lib.php')) include_once('dist/lib/'.$dist['baseid'].'.lib.php');
-include_once('dist/lib/'.$dist['id'].'.lib.php');
-include_once('dist/conf/'.$dist['id'].'.conf.php');
+if(is_file('dist/lib/'.$dist['baseid'].'.lib.php')) include_once 'dist/lib/'.$dist['baseid'].'.lib.php';
+include_once 'dist/lib/'.$dist['id'].'.lib.php';
+include_once 'dist/conf/'.$dist['id'].'.conf.php';
 
 //** Get hostname
 exec('hostname -f', $tmp_out);
@@ -124,22 +124,22 @@ $inst->is_update = true;
 $inst->find_installed_apps();
 
 //** Initialize the MySQL server connection
-include_once('lib/mysql.lib.php');
+include_once 'lib/mysql.lib.php';
 
 //** Database update is a bit brute force and should be rebuild later ;)
 
 /*
  * Try to read the DB-admin settings
  */
-$clientdb_host			= '';
-$clientdb_user			= '';
-$clientdb_password		= '';
-include_once("/usr/local/ispconfig/server/lib/mysql_clientdb.conf");
+$clientdb_host   = '';
+$clientdb_user   = '';
+$clientdb_password  = '';
+include_once "/usr/local/ispconfig/server/lib/mysql_clientdb.conf";
 $conf["mysql"]["admin_user"] = $clientdb_user;
 $conf["mysql"]["admin_password"] = $clientdb_password;
-$clientdb_host			= '';
-$clientdb_user			= '';
-$clientdb_password		= '';
+$clientdb_host   = '';
+$clientdb_user   = '';
+$clientdb_password  = '';
 
 //** There is a error if user for mysql admin_password if empty
 if( empty($conf["mysql"]["admin_password"]) ) {
@@ -147,7 +147,7 @@ if( empty($conf["mysql"]["admin_password"]) ) {
 }
 
 //** Test mysql root connection
-if(!@mysql_connect($conf["mysql"]["host"],$conf["mysql"]["admin_user"],$conf["mysql"]["admin_password"])) {
+if(!@mysql_connect($conf["mysql"]["host"], $conf["mysql"]["admin_user"], $conf["mysql"]["admin_password"])) {
 	die("internal error - MYSQL-Root passord wrong");
 }
 
@@ -157,7 +157,7 @@ if(!@mysql_connect($conf["mysql"]["host"],$conf["mysql"]["admin_user"],$conf["my
 checkDbHealth();
 
 /*
- *  Prepare the dump of the database 
+ *  Prepare the dump of the database
 */
 prepareDBDump();
 
@@ -196,7 +196,7 @@ if($conf['services']['mail'] == true) {
 	//** Configure postfix
 	swriteln('Configuring Postfix');
 	$inst->configure_postfix('dont-create-certs');
-	
+
 	//** Configure mailman
 	swriteln('Configuring Mailman');
 	$inst->configure_mailman('update');
@@ -217,7 +217,7 @@ if($conf['services']['mail'] == true) {
 		//** Configure PAM
 		swriteln('Configuring PAM');
 		$inst->configure_pam();
-		
+
 		//* Configure courier
 		swriteln('Configuring Courier');
 		$inst->configure_courier();
@@ -261,7 +261,7 @@ if($conf['services']['web']) {
 		//** Configure Apache
 		swriteln('Configuring Apache');
 		$inst->configure_apache();
-       
+
 		//** Configure vlogger
 		swriteln('Configuring vlogger');
 		$inst->configure_vlogger();
@@ -270,7 +270,7 @@ if($conf['services']['web']) {
 		swriteln('Configuring nginx');
 		$inst->configure_nginx();
 	}
-	
+
 	//** Configure apps vhost
 	swriteln('Configuring Apps vhost');
 	$inst->configure_apps_vhost();
@@ -303,30 +303,32 @@ $inst->install_crontab();
 
 //** Restart services:
 swriteln('Restarting services ...');
-if($conf['mysql']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['mysql']['init_script']))					system($conf['init_scripts'].'/'.$conf['mysql']['init_script'].' reload');
+if($conf['mysql']['installed'] == true && $conf['mysql']['init_script'] != '') system($inst->getinitcommand($conf['mysql']['init_script'], 'reload'));
 if($conf['services']['mail']) {
-	if($conf['postfix']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['postfix']['init_script']))				system($conf['init_scripts'].'/'.$conf['postfix']['init_script'].' restart');
-	if($conf['saslauthd']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['saslauthd']['init_script']))			system($conf['init_scripts'].'/'.$conf['saslauthd']['init_script'].' restart');
-	if($conf['amavis']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['amavis']['init_script']))					system($conf['init_scripts'].'/'.$conf['amavis']['init_script'].' restart');
-	if($conf['clamav']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['clamav']['init_script']))					system($conf['init_scripts'].'/'.$conf['clamav']['init_script'].' restart');
-	if($conf['courier']['courier-authdaemon'] != '' && is_executable($conf['init_scripts'].'/'.$conf['courier']['courier-authdaemon'])) system($conf['init_scripts'].'/'.$conf['courier']['courier-authdaemon'].' restart');
-	if($conf['courier']['courier-imap'] != '' && is_executable($conf['init_scripts'].'/'.$conf['courier']['courier-imap'])) 			system($conf['init_scripts'].'/'.$conf['courier']['courier-imap'].' restart');
-	if($conf['courier']['courier-imap-ssl'] != '' && is_executable($conf['init_scripts'].'/'.$conf['courier']['courier-imap-ssl'])) 	system($conf['init_scripts'].'/'.$conf['courier']['courier-imap-ssl'].' restart');
-	if($conf['courier']['courier-pop'] != '' && is_executable($conf['init_scripts'].'/'.$conf['courier']['courier-pop'])) 				system($conf['init_scripts'].'/'.$conf['courier']['courier-pop'].' restart');
-	if($conf['courier']['courier-pop-ssl'] != '' && is_executable($conf['init_scripts'].'/'.$conf['courier']['courier-pop-ssl'])) 		system($conf['init_scripts'].'/'.$conf['courier']['courier-pop-ssl'].' restart');
-	if($conf['dovecot']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['dovecot']['init_script'])) 		system($conf['init_scripts'].'/'.$conf['dovecot']['init_script'].' restart');
-	if($conf['mailman']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['mailman']['init_script'])) 		system($conf['init_scripts'].'/'.$conf['mailman']['init_script'].' restart');
+	if($conf['postfix']['installed'] == true && $conf['postfix']['init_script'] != '') system($inst->getinitcommand($conf['postfix']['init_script'], 'restart'));
+	if($conf['saslauthd']['installed'] == true && $conf['saslauthd']['init_script'] != '') system($inst->getinitcommand($conf['saslauthd']['init_script'], 'restart'));
+	if($conf['amavis']['installed'] == true && $conf['amavis']['init_script'] != '') system($inst->getinitcommand($conf['amavis']['init_script'], 'restart'));
+	if($conf['clamav']['installed'] == true && $conf['clamav']['init_script'] != '') system($inst->getinitcommand($conf['clamav']['init_script'], 'restart'));
+	if($conf['courier']['installed'] == true){
+		if($conf['courier']['courier-authdaemon'] != '') system($inst->getinitcommand($conf['courier']['courier-authdaemon'], 'restart'));
+		if($conf['courier']['courier-imap'] != '') system($inst->getinitcommand($conf['courier']['courier-imap'], 'restart'));
+		if($conf['courier']['courier-imap-ssl'] != '') system($inst->getinitcommand($conf['courier']['courier-imap-ssl'], 'restart'));
+		if($conf['courier']['courier-pop'] != '') system($inst->getinitcommand($conf['courier']['courier-pop'], 'restart'));
+		if($conf['courier']['courier-pop-ssl'] != '') system($inst->getinitcommand($conf['courier']['courier-pop-ssl'], 'restart'));
+	}
+	if($conf['dovecot']['installed'] == true && $conf['dovecot']['init_script'] != '') system($inst->getinitcommand($conf['dovecot']['init_script'], 'restart'));
+	if($conf['mailman']['installed'] == true && $conf['mailman']['init_script'] != '') system($inst->getinitcommand($conf['mailman']['init_script'], 'restart'));
 }
 if($conf['services']['web']) {
-	if($conf['webserver']['server_type'] == 'apache' && $conf['apache']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['apache']['init_script'])) 				system($conf['init_scripts'].'/'.$conf['apache']['init_script'].' restart');
+	if($conf['webserver']['server_type'] == 'apache' && $conf['apache']['init_script'] != '') system($inst->getinitcommand($conf['apache']['init_script'], 'restart'));
 	//* Reload is enough for nginx
-	if($conf['webserver']['server_type'] == 'nginx' && $conf['nginx']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['nginx']['init_script'])) 				system($conf['init_scripts'].'/'.$conf['nginx']['init_script'].' reload');
-	if($conf['pureftpd']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['pureftpd']['init_script']))				system($conf['init_scripts'].'/'.$conf['pureftpd']['init_script'].' restart');
+	if($conf['webserver']['server_type'] == 'nginx' && $conf['nginx']['init_script'] != '') system($inst->getinitcommand($conf['nginx']['init_script'], 'reload'));
+	if($conf['pureftpd']['installed'] == true && $conf['pureftpd']['init_script'] != '') system($inst->getinitcommand($conf['pureftpd']['init_script'], 'restart'));
 }
 if($conf['services']['dns']) {
-	if($conf['mydns']['installed'] == true && $conf['mydns']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['mydns']['init_script']))					system($conf['init_scripts'].'/'.$conf['mydns']['init_script'].' restart &> /dev/null');
-	if($conf['powerdns']['installed'] == true && $conf['powerdns']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['powerdns']['init_script']))					system($conf['init_scripts'].'/'.$conf['powerdns']['init_script'].' restart &> /dev/null');
-	if($conf['bind']['installed'] == true && $conf['bind']['init_script'] != '' && is_executable($conf['init_scripts'].'/'.$conf['bind']['init_script']))					system($conf['init_scripts'].'/'.$conf['bind']['init_script'].' restart &> /dev/null');
+	if($conf['mydns']['installed'] == true && $conf['mydns']['init_script'] != '') system($inst->getinitcommand($conf['mydns']['init_script'], 'restart').' &> /dev/null');
+	if($conf['powerdns']['installed'] == true && $conf['powerdns']['init_script'] != '') system($inst->getinitcommand($conf['powerdns']['init_script'], 'restart').' &> /dev/null');
+	if($conf['bind']['installed'] == true && $conf['bind']['init_script'] != '') system($inst->getinitcommand($conf['bind']['init_script'], 'restart').' &> /dev/null');
 }
 
 echo "Update finished.\n";

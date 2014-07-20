@@ -10,12 +10,19 @@
                 <input name="company_name" id="company_name" value="{tmpl_var name='company_name'}" size="30" maxlength="255" type="text" class="textInput" />
             </div>
             <div class="ctrlHolder">
+                <label for="gender">{tmpl_var name='gender_txt'}</label>
+                <select name="gender" id="gender" class="selectInput">
+                    {tmpl_var name='gender'}
+                </select>
+            </div>
+            <div class="ctrlHolder">
                 <label for="contact_name">{tmpl_var name='contact_name_txt'}*</label>
                 <input name="contact_name" id="contact_name" value="{tmpl_var name='contact_name'}" size="30" maxlength="255" type="text" class="textInput" />
             </div>
             <div class="ctrlHolder">
                 <label for="customer_no">{tmpl_var name='customer_no_txt'}</label>
                 <input name="customer_no" id="customer_no" value="{tmpl_var name='customer_no'}" size="30" maxlength="255" type="text" class="textInput" />
+				<input name="customer_no_org" id="customer_no_org" value="{tmpl_var name='customer_no'}" type="hidden" />
             </div>
             <div class="ctrlHolder">
                 <label for="username">{tmpl_var name='username_txt'}*</label>
@@ -23,7 +30,7 @@
             </div>
             <div class="ctrlHolder">
                 <label for="password">{tmpl_var name='password_txt'}</label>
-                <input name="password" id="password" value="{tmpl_var name='password'}" size="30" maxlength="255" type="password" class="textInput" onkeyup="pass_check(this.value);checkPassMatch('password','repeat_password');" />&nbsp;<a href="javascript:void(0);" onclick="generatePassword('password','repeat_password');">{tmpl_var name='generate_password_txt'}</a>
+                <input name="password" id="password" value="{tmpl_var name='password'}" size="30" maxlength="255" type="password" class="textInput" autocomplete="off" onkeyup="pass_check(this.value);checkPassMatch('password','repeat_password');" />&nbsp;<a href="javascript:void(0);" onclick="generatePassword('password','repeat_password');">{tmpl_var name='generate_password_txt'}</a>
             </div>
             <div class="ctrlHolder">
                 <p class="label">{tmpl_var name='password_strength_txt'}</p>
@@ -32,7 +39,7 @@
             </div>
             <div class="ctrlHolder">
                 <label for="repeat_password">{tmpl_var name='repeat_password_txt'}</label>
-                <input name="repeat_password" id="repeat_password" value="" size="15" maxlength="100" type="password" class="textInput" style="width:100px;"  onkeyup="checkPassMatch('password','repeat_password');" />
+                <input name="repeat_password" id="repeat_password" value="" size="15" maxlength="100" type="password" class="textInput" style="width:100px;" autocomplete="off" onkeyup="checkPassMatch('password','repeat_password');" />
             </div>
             <div id="confirmpasswordError" style="display:none;" class="confirmpassworderror">{tmpl_var name='password_mismatch_txt'}</div>
             <div id="confirmpasswordOK" style="display:none;" class="confirmpasswordok">{tmpl_var name='password_match_txt'}</div>
@@ -130,9 +137,29 @@
                 <label for="paypal_email">{tmpl_var name='paypal_email_txt'}</label>
                 <input name="paypal_email" id="paypal_email" value="{tmpl_var name='paypal_email'}" size="30" maxlength="255" type="text" class="textInput" />
             </div>
+			<div class="ctrlHolder">
+                <label for="added_date">{tmpl_var name='added_date_txt'}</label>
+                <input name="added_date" id="added_date" value="{tmpl_var name='added_date'}" size="10" maxlength="255" type="text" class="textInput" />
+            </div>
+			<div class="ctrlHolder">
+                <label for="added_by">{tmpl_var name='added_by_txt'}</label>
+                <input name="added_by" id="added_by" value="{tmpl_var name='added_by'}" size="10" maxlength="255" type="text" class="textInput" />
+            </div>
             <div class="ctrlHolder">
                 <label for="notes">{tmpl_var name='notes_txt'}</label>
                 <textarea name="notes" id="notes" rows='10' cols='30'>{tmpl_var name='notes'}</textarea>
+            </div>
+            <div class="ctrlHolder">
+                <p class="label">{tmpl_var name='locked_txt'}</p>
+                <div class="multiField">
+                    {tmpl_var name='locked'}
+                </div>
+            </div>
+            <div class="ctrlHolder">
+                <p class="label">{tmpl_var name='canceled_txt'}</p>
+                <div class="multiField">
+                    {tmpl_var name='canceled'}
+                </div>
             </div>
             {tmpl_var name='required_fields_txt'}
         </fieldset>
