@@ -18,11 +18,14 @@
         <script type="text/javascript" src="js/uni-form/uni-form.jquery.js"></script>
         <script type="text/javascript" src="js/jquery.ispconfigsearch.js"></script>
         <script type="text/javascript" src="js/jquery.tipsy.js"></script>
+        <tmpl_loop name="js_d_includes">
+            <script type="text/javascript" src="js/js.d/<tmpl_var name='file'>"></script>
+        </tmpl_loop>
         <script language="JavaScript" type="text/javascript">
             jQuery(document).ready(function() {
                 loadInitContent();
 				
-				$('form').attr('autocomplete','off');
+				$('form').not('#dummy_login_form').attr('autocomplete','off');
                 
                 $("#pageForm").submit(function(e){
                     //Prevent form submit: e.preventDefault() in lists
@@ -45,8 +48,8 @@
                 
                 jQuery('.ttip').tipsy({live: true, gravity: 'ne', html: true});
                 
-                tabChangeDiscard = '<tmpl_var name="tabchange_discard_enabled>';
-                tabChangeWarning = '<tmpl_var name="tabchange_warning_enabled>';
+                tabChangeDiscard = '<tmpl_var name="tabchange_discard_enabled">';
+                tabChangeWarning = '<tmpl_var name="tabchange_warning_enabled">';
                 tabChangeWarningTxt = '<tmpl_var name="global_tabchange_warning_txt">';
                 tabChangeDiscardTxt = '<tmpl_var name="global_tabchange_discard_txt">';
 				
@@ -161,6 +164,7 @@
                 <!-- begin: #content -->
                 <section id="content">
                     <form method="post" action="" id="pageForm" name="pageForm" enctype="multipart/form-data" class="uniForm">
+						<input type="text" style="display:none" /><input type="password" style="display:none"/>
                         <div id="pageContent"><!-- AJAX CONTENT --></div>
                     </form>
                     <div id="ie_clearing">&nbsp;</div>

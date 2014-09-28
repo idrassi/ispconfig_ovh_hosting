@@ -125,11 +125,12 @@ class installer_dist extends installer_base {
 
 		//* Create aliasaes
 		exec('/usr/lib/mailman/bin/genaliases 2>/dev/null');
+		if(is_file('/var/lib/mailman/data/virtual-mailman')) exec('postmap /var/lib/mailman/data/virtual-mailman');
 	}
 
 	function configure_postfix($options = '')
 	{
-		global $conf;
+		global $conf,$autoinstall;
 		$cf = $conf['postfix'];
 		$config_dir = $cf['config_dir'];
 
@@ -256,8 +257,13 @@ class installer_dist extends installer_base {
 
 		if(!stristr($options, 'dont-create-certs')) {
 			//* Create the SSL certificate
-			$command = 'cd '.$config_dir.'; '
-				.'openssl req -new -outform PEM -out smtpd.cert -newkey rsa:2048 -nodes -keyout smtpd.key -keyform PEM -days 365 -x509';
+			if(AUTOINSTALL){
+				$command = 'cd '.$config_dir.'; '
+					."openssl req -new -subj '/C=".escapeshellcmd($autoinstall['ssl_cert_country'])."/ST=".escapeshellcmd($autoinstall['ssl_cert_state'])."/L=".escapeshellcmd($autoinstall['ssl_cert_locality'])."/O=".escapeshellcmd($autoinstall['ssl_cert_organisation'])."/OU=".escapeshellcmd($autoinstall['ssl_cert_organisation_unit'])."/CN=".escapeshellcmd($autoinstall['ssl_cert_common_name'])."' -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509";
+			} else {
+				$command = 'cd '.$config_dir.'; '
+					.'openssl req -new -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509';
+			}
 			exec($command);
 
 			$command = 'chmod o= '.$config_dir.'/smtpd.key';
@@ -443,7 +449,6 @@ class installer_dist extends installer_base {
 			'virtual_transport = dovecot',
 			'smtpd_sasl_type = dovecot',
 			'smtpd_sasl_path = private/auth',
-			'receive_override_options = no_address_mappings'
 		);
 
 		// Make a backup copy of the main.cf file
@@ -495,13 +500,14 @@ class installer_dist extends installer_base {
 		$content = str_replace('{mysql_server_ispconfig_password}', $conf['mysql']['ispconfig_password'], $content);
 		$content = str_replace('{mysql_server_database}', $conf['mysql']['database'], $content);
 		$content = str_replace('{mysql_server_host}', $conf['mysql']['host'], $content);
+		$content = str_replace('{server_id}', $conf['server_id'], $content);
 		wf("$config_dir/$configfile", $content);
 
 		exec("chmod 600 $config_dir/$configfile");
 		exec("chown root:root $config_dir/$configfile");
 		
 		// Dovecot shall ignore mounts in website directory
-		exec("doveadm mount add '/srv/www/*' ignore");
+		if(is_installed('doveadm')) exec("doveadm mount add '/srv/www/*' ignore > /dev/null 2> /dev/null");
 
 	}
 
@@ -898,6 +904,10 @@ class installer_dist extends installer_base {
 		//* copy the ISPConfig server part
 		$command = "cp -rf ../server $install_dir";
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* copy the ISPConfig security part
+		$command = 'cp -rf ../security '.$install_dir;
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
@@ -1023,12 +1033,32 @@ class installer_dist extends installer_base {
 			$this->db->query($sql);
 		}
 
-		//* Chmod the files
-		$command = "chmod -R 750 $install_dir";
+		// chown install dir to root and chmod 755
+		$command = 'chown root:root '.$install_dir;
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chmod 755 '.$install_dir;
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
-		//* chown the files to the ispconfig user and group
-		$command = "chown -R ispconfig:ispconfig $install_dir";
+		//* Chmod the files and directories in the install dir
+		$command = 'chmod -R 750 '.$install_dir.'/*';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+
+		//* chown the interface files to the ispconfig user and group
+		$command = 'chown -R ispconfig:ispconfig '.$install_dir.'/interface';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* chown the server files to the root user and group
+		$command = 'chown -R root:root '.$install_dir.'/server';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* chown the security files to the root user and group
+		$command = 'chown -R root:root '.$install_dir.'/security';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* chown the security directory and security_settings.ini to root:ispconfig
+		$command = 'chown root:ispconfig '.$install_dir.'/security/security_settings.ini';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security';
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
 		//* Make the global language file directory group writable
@@ -1274,6 +1304,9 @@ class installer_dist extends installer_base {
 
 		//* Remove Domain module as its functions are available in the client module now
 		if(@is_dir('/usr/local/ispconfig/interface/web/domain')) exec('rm -rf /usr/local/ispconfig/interface/web/domain');
+		
+		// Add symlink for patch tool
+		if(!is_link('/usr/local/bin/ispconfig_patch')) exec('ln -s /usr/local/ispconfig/server/scripts/ispconfig_patch /usr/local/bin/ispconfig_patch');
 
 
 	}

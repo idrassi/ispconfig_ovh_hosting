@@ -351,10 +351,13 @@ class nginx_plugin {
 			if($data['new']['type'] == 'vhost' || $data['new']['type'] == 'vhostsubdomain') $app->log('document_root not set', LOGLEVEL_WARN);
 			return 0;
 		}
-		if($data['new']['system_user'] == 'root' or $data['new']['system_group'] == 'root') {
-			$app->log('Websites cannot be owned by the root user or group.', LOGLEVEL_WARN);
+
+		if($app->system->is_allowed_user($data['new']['system_user'], $app->system->is_user($data['new']['system_user']), true) == false
+			|| $app->system->is_allowed_group($data['new']['system_group'], $app->system->is_group($data['new']['system_group']), true) == false) {
+			$app->log('Websites cannot be owned by the root user or group. User: '.$data['new']['system_user'].' Group: '.$data['new']['system_group'], LOGLEVEL_WARN);
 			return 0;
 		}
+
 		if(trim($data['new']['domain']) == '') {
 			$app->log('domain is empty', LOGLEVEL_WARN);
 			return 0;
@@ -465,6 +468,9 @@ class nginx_plugin {
 					$app->system->rename($data['new']['document_root'], $data['new']['document_root'].'_bak_'.date('Y_m_d_H_i_s'));
 					$app->log('Renaming existing directory in new docroot location. mv '.$data['new']['document_root'].' '.$data['new']['document_root'].'_bak_'.date('Y_m_d_H_i_s'), LOGLEVEL_DEBUG);
 				}
+				
+				//* Unmount the old log directory bfore we move the log dir
+				exec('umount '.escapeshellcmd($old_dir.'/log'));
 
 				//* Create new base directory, if it does not exist yet
 				if(!is_dir($new_dir)) $app->system->mkdirpath($new_dir);
@@ -496,6 +502,8 @@ class nginx_plugin {
 			$app->system->removeLine('/etc/fstab', $fstab_line);
 			$fstab_line = '/var/log/ispconfig/httpd/'.$data['new']['domain'].' '.$data['new']['document_root'].'/'.$log_folder.'    none    bind,nobootwait,_netdev    0 0';
 			$app->system->replaceLine('/etc/fstab', $fstab_line, $fstab_line, 1, 1);
+			
+			exec('mount --bind '.escapeshellarg('/var/log/ispconfig/httpd/'.$data['new']['domain']).' '.escapeshellarg($data['new']['document_root'].'/'.$log_folder));
 
 		}
 
@@ -635,9 +643,9 @@ class nginx_plugin {
 				if(is_file($conf['rootpath'] . '/conf-custom/index/robots.txt')) {
 					exec('cp ' . $conf['rootpath'] . '/conf-custom/index/robots.txt '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
 				}
-				if(is_file($conf['rootpath'] . '/conf-custom/index/.htaccess')) {
-					exec('cp ' . $conf['rootpath'] . '/conf-custom/index/.htaccess '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
-				}
+				//if(is_file($conf['rootpath'] . '/conf-custom/index/.htaccess')) {
+				//	exec('cp ' . $conf['rootpath'] . '/conf-custom/index/.htaccess '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
+				//}
 			}
 			else {
 				if (file_exists($conf['rootpath'] . '/conf-custom/index/standard_index.html')) {
@@ -647,7 +655,7 @@ class nginx_plugin {
 					exec('cp ' . $conf['rootpath'] . '/conf/index/standard_index.html_'.substr(escapeshellcmd($conf['language']), 0, 2).' '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/index.html');
 					if(is_file($conf['rootpath'] . '/conf/index/favicon.ico')) exec('cp ' . $conf['rootpath'] . '/conf/index/favicon.ico '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
 					if(is_file($conf['rootpath'] . '/conf/index/robots.txt')) exec('cp ' . $conf['rootpath'] . '/conf/index/robots.txt '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
-					if(is_file($conf['rootpath'] . '/conf/index/.htaccess')) exec('cp ' . $conf['rootpath'] . '/conf/index/.htaccess '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
+					//if(is_file($conf['rootpath'] . '/conf/index/.htaccess')) exec('cp ' . $conf['rootpath'] . '/conf/index/.htaccess '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
 				}
 			}
 			exec('chmod -R a+r '.escapeshellcmd($data['new']['document_root']).'/' . $web_folder . '/');
@@ -708,13 +716,13 @@ class nginx_plugin {
 			if($web_config['security_level'] == 20) {
 
 				$app->system->chmod($data['new']['document_root'], 0755);
-				$app->system->chmod($data['new']['document_root'].'/web', 0711);
+				$app->system->chmod($data['new']['document_root'].'/web', 0751);
 				//$app->system->chmod($data['new']['document_root'].'/webdav',0710);
 				$app->system->chmod($data['new']['document_root'].'/private', 0710);
 				$app->system->chmod($data['new']['document_root'].'/ssl', 0755);
 
 				// make tmp directory writable for nginx and the website users
-				$app->system->chmod($data['new']['document_root'].'/tmp', 0777);
+				$app->system->chmod($data['new']['document_root'].'/tmp', 0770);
 
 				// Set Log directory to 755 to make the logs accessible by the FTP user
 				if(realpath($data['new']['document_root'].'/'.$log_folder . '/error.log') == '/var/log/ispconfig/httpd/'.$data['new']['domain'].'/error.log') {
@@ -774,7 +782,7 @@ class nginx_plugin {
 				$app->system->chmod($data['new']['document_root'].'/cgi-bin', 0755);
 
 				// make temp directory writable for nginx and the website users
-				$app->system->chmod($data['new']['document_root'].'/tmp', 0777);
+				$app->system->chmod($data['new']['document_root'].'/tmp', 0770);
 
 				// Set Log directory to 755 to make the logs accessible by the FTP user
 				if(realpath($data['new']['document_root'].'/'.$log_folder . '/error.log') == '/var/log/ispconfig/httpd/'.$data['new']['domain'].'/error.log') {
