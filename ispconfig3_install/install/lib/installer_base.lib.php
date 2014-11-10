@@ -983,19 +983,20 @@ class installer_base {
 
 		//* Get the dovecot version
 		exec('dovecot --version', $tmp);
-		$parts = explode('.', trim($tmp[0]));
-		$dovecot_version = $parts[0];
+		$dovecot_version = $tmp[0];
 		unset($tmp);
-		unset($parts);
 
 		//* Copy dovecot configuration file
-		if($dovecot_version == 2) {
+		if(version_compare($dovecot_version,2) >= 0) {
 			if(is_file($conf['ispconfig_install_dir'].'/server/conf-custom/install/debian_dovecot2.conf.master')) {
 				copy($conf['ispconfig_install_dir'].'/server/conf-custom/install/debian_dovecot2.conf.master', $config_dir.'/'.$configfile);
 			} else {
 				copy('tpl/debian_dovecot2.conf.master', $config_dir.'/'.$configfile);
 			}
 			replaceLine($config_dir.'/'.$configfile, 'postmaster_address = postmaster@example.com', 'postmaster_address = postmaster@'.$conf['hostname'], 1, 0);
+			if(version_compare($dovecot_version,2.1) < 0) {
+				removeLine($config_dir.'/'.$configfile, 'ssl_protocols =');
+			}
 		} else {
 			if(is_file($conf['ispconfig_install_dir'].'/server/conf-custom/install/debian_dovecot.conf.master')) {
 				copy($conf['ispconfig_install_dir'].'/server/conf-custom/install/debian_dovecot.conf.master', $config_dir.'/'.$configfile);
@@ -1716,6 +1717,8 @@ class installer_base {
 		exec("openssl rsa -passin pass:$ssl_pw -in $ssl_key_file -out $ssl_key_file.insecure");
 		rename($ssl_key_file, $ssl_key_file.'.secure');
 		rename($ssl_key_file.'.insecure', $ssl_key_file);
+		
+		exec('chown -R root:root /usr/local/ispconfig/interface/ssl');
 
 	}
 
@@ -1745,9 +1748,30 @@ class installer_base {
 		$command = 'cp -rf ../server '.$install_dir;
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		
+		//* Make a backup of the security settings
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini')) copy('/usr/local/ispconfig/security/security_settings.ini','/usr/local/ispconfig/security/security_settings.ini~');
+		
 		//* copy the ISPConfig security part
 		$command = 'cp -rf ../security '.$install_dir;
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* Apply changed security_settings.ini values to new security_settings.ini file
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini~')) {
+			$security_settings_old = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini~'));
+			$security_settings_new = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini'));
+			if(is_array($security_settings_new) && is_array($security_settings_old)) {
+				foreach($security_settings_new as $section => $sval) {
+					if(is_array($sval)) {
+						foreach($sval as $key => $val) {
+							if(isset($security_settings_old[$section]) && isset($security_settings_old[$section][$key])) {
+								$security_settings_new[$section][$key] = $security_settings_old[$section][$key];
+							}
+						}
+					}
+				}
+				file_put_contents('/usr/local/ispconfig/security/security_settings.ini',array_to_ini($security_settings_new));
+			}
+		}
 
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
@@ -1916,6 +1940,12 @@ class installer_base {
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		$command = 'chown root:ispconfig '.$install_dir.'/security';
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.whitelist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.htmlfield';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/apache_directives.blacklist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
 		//* Make the global language file directory group writable
 		exec("chmod -R 770 $install_dir/interface/lib/lang");
@@ -1967,6 +1997,8 @@ class installer_base {
 			exec('chmod -R 770 '.escapeshellarg($install_dir.'/interface/invoices'));
 			exec('chown -R ispconfig:ispconfig '.escapeshellarg($install_dir.'/interface/invoices'));
 		}
+		
+		exec('chown -R root:root /usr/local/ispconfig/interface/ssl');
 
 		// TODO: FIXME: add the www-data user to the ispconfig group. This is just for testing
 		// and must be fixed as this will allow the apache user to read the ispconfig files.
@@ -2186,7 +2218,7 @@ class installer_base {
 		$content = rfsel($conf['ispconfig_install_dir'].'/server/conf-custom/install/mysql_clientdb.conf.master', 'tpl/mysql_clientdb.conf.master');
 		$content = str_replace('{hostname}', $conf['mysql']['host'], $content);
 		$content = str_replace('{username}', $conf['mysql']['admin_user'], $content);
-		$content = str_replace('{password}', $conf['mysql']['admin_password'], $content);
+		$content = str_replace('{password}', addslashes($conf['mysql']['admin_password']), $content);
 		wf($install_dir.'/server/lib/mysql_clientdb.conf', $content);
 		chmod($install_dir.'/server/lib/mysql_clientdb.conf', 0600);
 		chown($install_dir.'/server/lib/mysql_clientdb.conf', 'root');
@@ -2274,14 +2306,14 @@ class installer_base {
 
 	public function getinitcommand($servicename, $action, $init_script_directory = ''){
 		global $conf;
-		// systemd
-		if(is_executable('/bin/systemd')){
-			return 'systemctl '.$action.' '.$servicename.'.service';
-		}
 		// upstart
 		if(is_executable('/sbin/initctl')){
 			exec('/sbin/initctl version 2>/dev/null | /bin/grep -q upstart', $retval['output'], $retval['retval']);
 			if(intval($retval['retval']) == 0) return 'service '.$servicename.' '.$action;
+		}
+		// systemd
+		if(is_executable('/bin/systemd') || is_executable('/usr/bin/systemctl')){
+			return 'systemctl '.$action.' '.$servicename.'.service';
 		}
 		// sysvinit
 		if($init_script_directory == '') $init_script_directory = $conf['init_scripts'];

@@ -86,6 +86,9 @@ function get_distname() {
 			$mainver = array_filter($mainver);
 			$mainver = current($mainver).'.'.next($mainver);
 			switch ($mainver){
+			case "14.10":
+				$relname = "(Utopic Unicorn)";
+				break;
 			case "14.04":
 				$relname = "(Trusty Tahr)";
 				break;
@@ -264,7 +267,7 @@ function get_distname() {
 		} elseif(stristr($content, 'CentOS Linux release 7')) {
 			$distname = 'CentOS';
 			$distver = 'Unknown';
-			$distid = 'centos53';
+			$distid = 'centos70';
 			$distbaseid = 'fedora';
 			swriteln("Operating System: CentOS 7 or compatible\n");
 		} else {

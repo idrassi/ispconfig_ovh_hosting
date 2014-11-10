@@ -231,10 +231,10 @@ class installer_dist extends installer_base {
 			//* Create the SSL certificate
 			if(AUTOINSTALL){
 				$command = 'cd '.$config_dir.'; '
-					."openssl req -new -subj '/C=".$autoinstall['ssl_cert_country']."/ST=".$autoinstall['ssl_cert_state']."/L=".$autoinstall['ssl_cert_locality']."/O=".$autoinstall['ssl_cert_organisation']."/OU=".$autoinstall['ssl_cert_organisation_unit']."/CN=".$autoinstall['ssl_cert_common_name']."' -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509";
+					."openssl req -new -subj '/C=".escapeshellcmd($autoinstall['ssl_cert_country'])."/ST=".escapeshellcmd($autoinstall['ssl_cert_state'])."/L=".escapeshellcmd($autoinstall['ssl_cert_locality'])."/O=".escapeshellcmd($autoinstall['ssl_cert_organisation'])."/OU=".escapeshellcmd($autoinstall['ssl_cert_organisation_unit'])."/CN=".escapeshellcmd($autoinstall['ssl_cert_common_name'])."' -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509";
 			} else {
 				$command = 'cd '.$config_dir.'; '
-					."openssl req -new -subj '/C=".escapeshellcmd($autoinstall['ssl_cert_country'])."/ST=".escapeshellcmd($autoinstall['ssl_cert_state'])."/L=".escapeshellcmd($autoinstall['ssl_cert_locality'])."/O=".escapeshellcmd($autoinstall['ssl_cert_organisation'])."/OU=".escapeshellcmd($autoinstall['ssl_cert_organisation_unit'])."/CN=".escapeshellcmd($autoinstall['ssl_cert_common_name'])."' -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509";
+					.'openssl req -new -outform PEM -out smtpd.cert -newkey rsa:4096 -nodes -keyout smtpd.key -keyform PEM -days 3650 -x509';
 			}
 			exec($command);
 
@@ -416,17 +416,18 @@ class installer_dist extends installer_base {
 
 		//* Get the dovecot version
 		exec('dovecot --version', $tmp);
-		$parts = explode('.', trim($tmp[0]));
-		$dovecot_version = $parts[0];
+		$dovecot_version = $tmp[0];
 		unset($tmp);
-		unset($parts);
 
 		//* Copy dovecot configuration file
-		if($dovecot_version == 2) {
+		if(version_compare($dovecot_version,2) >= 0) {
 			if(is_file($conf['ispconfig_install_dir'].'/server/conf-custom/install/fedora_dovecot2.conf.master')) {
 				copy($conf['ispconfig_install_dir'].'/server/conf-custom/install/fedora_dovecot2.conf.master', $config_dir.'/'.$configfile);
 			} else {
 				copy('tpl/fedora_dovecot2.conf.master', $config_dir.'/'.$configfile);
+			}
+			if(version_compare($dovecot_version,2.1) < 0) {
+				removeLine($config_dir.'/'.$configfile, 'ssl_protocols =');
 			}
 		} else {
 			if(is_file($conf['ispconfig_install_dir'].'/server/conf-custom/install/fedora_dovecot.conf.master')) {
@@ -833,9 +834,30 @@ class installer_dist extends installer_base {
 		$command = "cp -rf ../server $install_dir";
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		
+		//* Make a backup of the security settings
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini')) copy('/usr/local/ispconfig/security/security_settings.ini','/usr/local/ispconfig/security/security_settings.ini~');
+		
 		//* copy the ISPConfig security part
 		$command = 'cp -rf ../security '.$install_dir;
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* Apply changed security_settings.ini values to new security_settings.ini file
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini~')) {
+			$security_settings_old = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini~'));
+			$security_settings_new = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini'));
+			if(is_array($security_settings_new) && is_array($security_settings_old)) {
+				foreach($security_settings_new as $section => $sval) {
+					if(is_array($sval)) {
+						foreach($sval as $key => $val) {
+							if(isset($security_settings_old[$section]) && isset($security_settings_old[$section][$key])) {
+								$security_settings_new[$section][$key] = $security_settings_old[$section][$key];
+							}
+						}
+					}
+				}
+				file_put_contents('/usr/local/ispconfig/security/security_settings.ini',array_to_ini($security_settings_new));
+			}
+		}
 
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
@@ -989,6 +1011,12 @@ class installer_dist extends installer_base {
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		$command = 'chown root:ispconfig '.$install_dir.'/security';
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.whitelist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.htmlfield';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/apache_directives.blacklist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
 		//* Make the global language file directory group writable
 		exec("chmod -R 770 $install_dir/interface/lib/lang");
@@ -1030,6 +1058,13 @@ class installer_dist extends installer_base {
 			exec("chmod 600 $install_dir/server/lib/mysql_clientdb.conf");
 			exec("chown root:root $install_dir/server/lib/mysql_clientdb.conf");
 		}
+		
+		if(is_dir($install_dir.'/interface/invoices')) {
+			exec('chmod -R 770 '.escapeshellarg($install_dir.'/interface/invoices'));
+			exec('chown -R ispconfig:ispconfig '.escapeshellarg($install_dir.'/interface/invoices'));
+		}
+		
+		exec('chown -R root:root /usr/local/ispconfig/interface/ssl');
 
 		// TODO: FIXME: add the www-data user to the ispconfig group. This is just for testing
 		// and must be fixed as this will allow the apache user to read the ispconfig files.
@@ -1257,7 +1292,7 @@ class installer_dist extends installer_base {
 		$content = rfsel($conf['ispconfig_install_dir'].'/server/conf-custom/install/mysql_clientdb.conf.master', "tpl/mysql_clientdb.conf.master");
 		$content = str_replace('{hostname}', $conf['mysql']['host'], $content);
 		$content = str_replace('{username}', $conf['mysql']['admin_user'], $content);
-		$content = str_replace('{password}', $conf['mysql']['admin_password'], $content);
+		$content = str_replace('{password}', addslashes($conf['mysql']['admin_password']), $content);
 		wf("$install_dir/server/lib/mysql_clientdb.conf", $content);
 		exec('chmod 600 '."$install_dir/server/lib/mysql_clientdb.conf");
 		exec('chown root:root '."$install_dir/server/lib/mysql_clientdb.conf");

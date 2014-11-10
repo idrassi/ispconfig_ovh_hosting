@@ -160,7 +160,7 @@ class login_index {
 					} else {
 						if(stristr($username, '@')) {
 							//* mailuser login
-							$sql = "SELECT * FROM mail_user WHERE login = '$username'";
+							$sql = "SELECT * FROM mail_user WHERE login = '$username' or email = '$username'";
 							$mailuser = $app->db->queryOneRecord($sql);
 							$user = false;
 							if($mailuser) {
@@ -323,6 +323,15 @@ class login_index {
 		if($maintenance_mode_error != '') $error = '<strong>'.$maintenance_mode_error.'</strong><br><br>'.$error;
 		if($error != ''){
 			$error = '<div class="box box_error"><h1>Error</h1>'.$error.'</div>';
+		}
+		
+		$app->load('getconf');
+
+		$security_config = $app->getconf->get_security_config('permissions');
+		if($security_config['password_reset_allowed'] == 'yes') {
+			$app->tpl->setVar('pw_lost_show', 1);
+		} else {
+			$app->tpl->setVar('pw_lost_show', 0);
 		}
 		
 		$app->tpl->setVar('error', $error);

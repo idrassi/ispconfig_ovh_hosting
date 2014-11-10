@@ -656,6 +656,9 @@ class installer_dist extends installer_base {
 		if($conf['apache']['installed'] == false) return;
 		//* Create the logging directory for the vhost logfiles
 		exec('mkdir -p /var/log/ispconfig/httpd');
+		
+		//* enable apache logio module
+		exec('a2enmod logio');
 
 		//if(is_file('/etc/suphp.conf')) {
 		replaceLine('/etc/suphp.conf', 'php=php', 'x-httpd-suphp="php:/srv/www/cgi-bin/php5"', 0, 0);
@@ -905,9 +908,30 @@ class installer_dist extends installer_base {
 		$command = "cp -rf ../server $install_dir";
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		
+		//* Make a backup of the security settings
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini')) copy('/usr/local/ispconfig/security/security_settings.ini','/usr/local/ispconfig/security/security_settings.ini~');
+		
 		//* copy the ISPConfig security part
 		$command = 'cp -rf ../security '.$install_dir;
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		
+		//* Apply changed security_settings.ini values to new security_settings.ini file
+		if(is_file('/usr/local/ispconfig/security/security_settings.ini~')) {
+			$security_settings_old = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini~'));
+			$security_settings_new = ini_to_array(file_get_contents('/usr/local/ispconfig/security/security_settings.ini'));
+			if(is_array($security_settings_new) && is_array($security_settings_old)) {
+				foreach($security_settings_new as $section => $sval) {
+					if(is_array($sval)) {
+						foreach($sval as $key => $val) {
+							if(isset($security_settings_old[$section]) && isset($security_settings_old[$section][$key])) {
+								$security_settings_new[$section][$key] = $security_settings_old[$section][$key];
+							}
+						}
+					}
+				}
+				file_put_contents('/usr/local/ispconfig/security/security_settings.ini',array_to_ini($security_settings_new));
+			}
+		}
 
 		//* Create a symlink, so ISPConfig is accessible via web
 		// Replaced by a separate vhost definition for port 8080
@@ -1060,6 +1084,12 @@ class installer_dist extends installer_base {
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 		$command = 'chown root:ispconfig '.$install_dir.'/security';
 		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.whitelist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/ids.htmlfield';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
+		$command = 'chown root:ispconfig '.$install_dir.'/security/apache_directives.blacklist';
+		caselog($command.' &> /dev/null', __FILE__, __LINE__, "EXECUTED: $command", "Failed to execute the command $command");
 
 		//* Make the global language file directory group writable
 		exec("chmod -R 770 $install_dir/interface/lib/lang");
@@ -1101,6 +1131,13 @@ class installer_dist extends installer_base {
 			exec("chmod 600 $install_dir/server/lib/mysql_clientdb.conf");
 			exec("chown root:root $install_dir/server/lib/mysql_clientdb.conf");
 		}
+		
+		if(is_dir($install_dir.'/interface/invoices')) {
+			exec('chmod -R 770 '.escapeshellarg($install_dir.'/interface/invoices'));
+			exec('chown -R ispconfig:ispconfig '.escapeshellarg($install_dir.'/interface/invoices'));
+		}
+		
+		exec('chown -R root:root /usr/local/ispconfig/interface/ssl');
 
 		// TODO: FIXME: add the www-data user to the ispconfig group. This is just for testing
 		// and must be fixed as this will allow the apache user to read the ispconfig files.
@@ -1329,7 +1366,7 @@ class installer_dist extends installer_base {
 		$content = rfsel($conf['ispconfig_install_dir'].'/server/conf-custom/install/mysql_clientdb.conf.master', "tpl/mysql_clientdb.conf.master");
 		$content = str_replace('{hostname}', $conf['mysql']['host'], $content);
 		$content = str_replace('{username}', $conf['mysql']['admin_user'], $content);
-		$content = str_replace('{password}', $conf['mysql']['admin_password'], $content);
+		$content = str_replace('{password}', addslashes($conf['mysql']['admin_password']), $content);
 		wf("$install_dir/server/lib/mysql_clientdb.conf", $content);
 		exec('chmod 600 '."$install_dir/server/lib/mysql_clientdb.conf");
 		exec('chown root:root '."$install_dir/server/lib/mysql_clientdb.conf");
