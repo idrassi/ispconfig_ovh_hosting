@@ -7802,7 +7802,7 @@ class SimplePie_File
 				if (isset($url_parts['scheme']) && strtolower($url_parts['scheme']) === 'https')
 				{
 					$url_parts['host'] = "ssl://$url_parts[host]";
-					$url_parts['port'] = 8443;
+					$url_parts['port'] = 443;
 				}
 				if (!isset($url_parts['port']))
 				{
