@@ -149,14 +149,14 @@ class functions {
 		$url = (stristr($_SERVER['SERVER_PROTOCOL'], 'HTTPS') || stristr($_SERVER['HTTPS'], 'on'))?'https':'http';
 		if($_SERVER['SERVER_NAME'] != '_') {
 			$url .= '://'.$_SERVER['SERVER_NAME'];
-			if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 8443) {
+			if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443 && $_SERVER['SERVER_PORT'] != 8443) {
 				$url .= ':'.$_SERVER['SERVER_PORT'];
 			}
 		} else {
 			$app->uses("getconf");
 			$server_config = $app->getconf->get_server_config(1, 'server');
 			$url .= '://'.$server_config['hostname'];
-			if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 8443) {
+			if($_SERVER['SERVER_PORT'] != 80 && $_SERVER['SERVER_PORT'] != 443 && $_SERVER['SERVER_PORT'] != 8443) {
 				$url .= ':'.$_SERVER['SERVER_PORT'];
 			}
 		}
