@@ -153,13 +153,43 @@ class auth {
 		
 	}
 
-	public function get_random_password($length = 8) {
-		$base64_alphabet='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-		$password = '';
-		for ($n=0;$n<$length;$n++) {
-			$password.=$base64_alphabet[mt_rand(0, 63)];
+	public function get_random_password($minLength = 8, $special = false) {
+		if($minLength < 8) $minLength = 8;
+		$maxLength = $minLength + 5;
+		$length = mt_rand($minLength, $maxLength);
+		
+		$alphachars = "abcdefghijklmnopqrstuvwxyz";
+		$upperchars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+		$numchars = "1234567890";
+		$specialchars = "!@#_";
+		
+		$num_special = 0;
+		if($special == true) {
+			$num_special = intval(mt_rand(0, round($length / 4))) + 1;
 		}
-		return $password;
+		$numericlen = mt_rand(1, 2);
+		$alphalen = $length - $num_special - $numericlen;
+		$upperlen = intval($alphalen / 2);
+		$alphalen = $alphalen - $upperlen;
+		$password = '';
+		
+		for($i = 0; $i < $alphalen; $i++) {
+			$password .= substr($alphachars, mt_rand(0, strlen($alphachars) - 1), 1);
+		}
+		
+		for($i = 0; $i < $upperlen; $i++) {
+			$password .= substr($upperchars, mt_rand(0, strlen($upperchars) - 1), 1);
+		}
+		
+		for($i = 0; $i < $num_special; $i++) {
+			$password .= substr($specialchars, mt_rand(0, strlen($specialchars) - 1), 1);
+		}
+		
+		for($i = 0; $i < $numericlen; $i++) {
+			$password .= substr($numchars, mt_rand(0, strlen($numchars) - 1), 1);
+		}
+		
+		return str_shuffle($password);
 	}
 
 	public function crypt_password($cleartext_password) {
@@ -170,6 +200,56 @@ class auth {
 		}
 		$salt.="$";
 		return crypt($cleartext_password, $salt);
+	}
+	
+	public function csrf_token_get($form_name) {
+		/* CSRF PROTECTION */
+		// generate csrf protection id and key
+		$_csrf_id = uniqid($form_name . '_'); // form id
+		$_csrf_key = sha1(uniqid(microtime(true), true)); // the key
+		if(!isset($_SESSION['_csrf'])) $_SESSION['_csrf'] = array();
+		if(!isset($_SESSION['_csrf_timeout'])) $_SESSION['_csrf_timeout'] = array();
+		$_SESSION['_csrf'][$_csrf_id] = $_csrf_key;
+		$_SESSION['_csrf_timeout'][$_csrf_id] = time() + 3600; // timeout hash in 1 hour
+		
+		return array('csrf_id' => $_csrf_id,'csrf_key' => $_csrf_key);
+	}
+	
+	public function csrf_token_check() {
+		global $app;
+		
+		if(isset($_POST) && is_array($_POST)) {
+			$_csrf_valid = false;
+			if(isset($_POST['_csrf_id']) && isset($_POST['_csrf_key'])) {
+				$_csrf_id = trim($_POST['_csrf_id']);
+				$_csrf_key = trim($_POST['_csrf_key']);
+				if(isset($_SESSION['_csrf']) && isset($_SESSION['_csrf'][$_csrf_id]) && isset($_SESSION['_csrf_timeout']) && isset($_SESSION['_csrf_timeout'][$_csrf_id])) {
+					if($_SESSION['_csrf'][$_csrf_id] === $_csrf_key && $_SESSION['_csrf_timeout'] >= time()) $_csrf_valid = true;
+				}
+			}
+			if($_csrf_valid !== true) {
+				$app->log('CSRF attempt blocked. Referer: ' . (isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : 'unknown'), LOGLEVEL_WARN);
+				$app->error($app->lng('err_csrf_attempt_blocked'));
+			}
+			$_SESSION['_csrf'][$_csrf_id] = null;
+			$_SESSION['_csrf_timeout'][$_csrf_id] = null;
+			unset($_SESSION['_csrf'][$_csrf_id]);
+			unset($_SESSION['_csrf_timeout'][$_csrf_id]);
+			
+			if(isset($_SESSION['_csrf_timeout']) && is_array($_SESSION['_csrf_timeout'])) {
+				$to_unset = array();
+				foreach($_SESSION['_csrf_timeout'] as $_csrf_id => $timeout) {
+					if($timeout < time()) $to_unset[] = $_csrf_id;
+				}
+				foreach($to_unset as $_csrf_id) {
+					$_SESSION['_csrf'][$_csrf_id] = null;
+					$_SESSION['_csrf_timeout'][$_csrf_id] = null;
+					unset($_SESSION['_csrf'][$_csrf_id]);
+					unset($_SESSION['_csrf_timeout'][$_csrf_id]);
+				}
+				unset($to_unset);
+			}
+		}
 	}
 
 }

@@ -62,6 +62,9 @@ class monitor_tools {
 				$mainver = array_filter($mainver);
 				$mainver = current($mainver).'.'.next($mainver);
 				switch ($mainver){
+				case "15.04":
+					$relname = "(Vivid Vervet)";
+					break;
 				case "14.10":
 					$relname = "(Utopic Unicorn)";
 					break;
@@ -147,6 +150,11 @@ class monitor_tools {
 			} elseif (strstr(trim(file_get_contents('/etc/debian_version')), '7.0') || substr(trim(file_get_contents('/etc/debian_version')),0,2) == '7.' || trim(file_get_contents('/etc/debian_version')) == 'wheezy/sid') {
 				$distname = 'Debian';
 				$distver = 'Wheezy/Sid';
+				$distid = 'debian60';
+				$distbaseid = 'debian';
+			} elseif(strstr(trim(file_get_contents('/etc/debian_version')), '8') || substr(trim(file_get_contents('/etc/debian_version')),0,1) == '8') {
+				$distname = 'Debian';
+				$distver = 'Jessie';
 				$distid = 'debian60';
 				$distbaseid = 'debian';
 			} else {
