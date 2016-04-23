@@ -767,6 +767,33 @@ class page_action extends tform_actions {
 				$app->tform->errorMessage .= $app->tform->lng("invalid_custom_php_ini_settings_txt").'<br>';
 			}
 		}
+		
+		// Check custom PHP version
+		if(isset($this->dataRecord['fastcgi_php_version']) && $this->dataRecord['fastcgi_php_version'] != '') {
+			// Check php-fpm mode
+			if($this->dataRecord['php'] == 'php-fpm'){
+				$tmp = $app->db->queryOneRecord("SELECT * FROM server_php WHERE CONCAT(name,':',php_fpm_init_script,':',php_fpm_ini_dir,':',php_fpm_pool_dir) = '".$app->db->quote($this->dataRecord['fastcgi_php_version'])."'");
+				if(is_array($tmp)) {
+					$this->dataRecord['fastcgi_php_version'] = $tmp['name'].':'.$tmp['php_fpm_init_script'].':'.$tmp['php_fpm_ini_dir'].':'.$tmp['php_fpm_pool_dir'];
+				} else {
+					$this->dataRecord['fastcgi_php_version'] = '';
+				}
+				unset($tmp);
+			// Check fast-cgi mode
+			} elseif($this->dataRecord['php'] == 'fast-cgi') {
+				$tmp = $app->db->queryOneRecord("SELECT * FROM server_php WHERE CONCAT(name,':',php_fastcgi_binary,':',php_fastcgi_ini_dir) = '".$app->db->quote($this->dataRecord['fastcgi_php_version'])."'");
+				if(is_array($tmp)) {
+					$this->dataRecord['fastcgi_php_version'] = $tmp['name'].':'.$tmp['php_fastcgi_binary'].':'.$tmp['php_fastcgi_ini_dir'];
+				} else {
+					$this->dataRecord['fastcgi_php_version'] = '';
+				}
+				unset($tmp);
+			} else {
+				// Other PHP modes do not have custom versions, so we force the value to be empty
+				$this->dataRecord['fastcgi_php_version'] = '';
+			}
+		}
+		
 
 		parent::onSubmit();
 	}
